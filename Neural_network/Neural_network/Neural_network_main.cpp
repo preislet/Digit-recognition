@@ -2,7 +2,6 @@
 #include<vector>
 #include<algorithm>
 #include<string>
-#include<hash_map>
 #include<memory>
 
 #include "Neural_network.hpp" 

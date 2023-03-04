@@ -4,7 +4,7 @@
 #include<iostream>
 #include<vector>
 class Neuron;
-typedef std::vector<Neuron> Layer;
+using Layer = std::vector<Neuron>;
 
 struct Connection
 {

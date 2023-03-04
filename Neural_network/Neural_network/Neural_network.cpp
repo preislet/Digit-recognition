@@ -2,12 +2,10 @@
 #include<vector>
 #include<algorithm>
 #include<string>
-#include<hash_map>
-#include<memory>
 #include<cassert>
 
 class Neuron;
-typedef std::vector<Neuron> Layer;
+using Layer = std::vector<Neuron>;
 
 struct Connection
 {
@@ -25,15 +23,22 @@ private:
 class Neuron
 {
 private:
-	int NumberOfConnections;
+	int numberOfConnections;
+	int index;
 	double outputValue;
 	std::vector<Connection> outputWeights;
+
+	static double ActivationFunction(double SumOfPreviousLayer) { return tanh(SumOfPreviousLayer); }
+
+	// Derivative of tanh(x) = 1 - tanh(x)^2
+	static double ActivationFunctionDerivative(double tanhValue) { return 1 - pow(tanhValue, 2); }
 public:
-	Neuron(int NumberOfConnections)
+	Neuron(int numberOfConnections, int index)
 	{
-		this->NumberOfConnections = NumberOfConnections;
+		this->numberOfConnections = numberOfConnections;
+		this->index = index;
 		outputValue = 0;
-		for(int i = 0; i < NumberOfConnections; ++i)
+		for(int i = 0; i < numberOfConnections; ++i)
 		{
 			outputWeights.emplace_back(Connection());
 		}
@@ -42,10 +47,17 @@ public:
 	void SetOutputValue(const double outVal) { outputValue = outVal; }
 	double GetOutputValue() const { return outputValue; }
 
-	void FeedForward(std::unique_ptr<Layer> layerPtr)
+	void FeedForward(const Layer& previousLayer)
 	{
-		
+		double SumOfPreviousLayer = 0;
+
+		for (const Neuron &neuron : previousLayer)
+			SumOfPreviousLayer += neuron.GetOutputValue() * neuron.outputWeights[index].weight;
+
+		outputValue = ActivationFunction(SumOfPreviousLayer);
 	}
+
+	
 };
 
 class Net
@@ -65,8 +77,8 @@ public:
 			else numOfOutputs = topology[NumOfLayer + 1];
 
 			Layer tmpLayer;
-			for (int i = 0; i <= topology[NumOfLayer]; ++i)
-				tmpLayer.emplace_back(Neuron(numOfOutputs));
+			for (int neuronNum = 0; neuronNum <= topology[NumOfLayer]; ++neuronNum)
+				tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum));
 
 			layers.emplace_back(tmpLayer);
 		}
@@ -82,8 +94,8 @@ public:
 			layers[0][i].SetOutputValue(inputValues[i]);
 
 		for (int layerNum = 1; layerNum < layers.size(); ++layerNum)
-			for (Neuron neuron : layers[layerNum])
-				neuron.FeedForward(std::make_unique<Layer>(layers[layerNum]));
+			for (Neuron &neuron : layers[layerNum])
+				neuron.FeedForward(layers[layerNum - 1]);
 		//37:34
 	};
 	void BackPropagation(const std::vector<double>& targetValues);
