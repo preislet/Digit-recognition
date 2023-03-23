@@ -7,119 +7,131 @@
 #include<sstream>
 
 
-#include "Neural_network.hpp"
+#include "Neural_network.cpp"
 
 
-//https://www.gormanalysis.com/blog/reading-and-writing-csv-files-with-cpp/
-//TO-DO předělat funkci, aby vyhovovala přesně tomu, co potřebuji
-std::vector<std::pair<std::string, std::vector<double>>> read_csv()
+std::vector<std::vector<double>> read_csv(const std::string& path)
 {
-    std::vector<std::pair<std::string, std::vector<double>>> result;
+    std::ifstream CSV_File(path);
+    std::string line;
 
-    // Create an input filestream
-    std::ifstream myFile("train.csv");
+    std::vector<std::vector<double>> result;
+    result.emplace_back();
+    if(CSV_File.good()) std::getline(CSV_File, line); //extract names of column
 
-    // Make sure the file is open
-    if (!myFile.is_open()) throw std::runtime_error("Could not open file");
-
-    // Helper vars
-    std::string line, colname;
-    int val;
-
-    // Read the column names
-    if (myFile.good())
+    while(std::getline(CSV_File, line))
     {
-        // Extract the first line in the file
-        std::getline(myFile, line);
-
-        // Create a stringstream from line
         std::stringstream ss(line);
+        std::string tmp;
 
-        // Extract each column name
-        while (std::getline(ss, colname, ',')) {
+        std::getline(ss, tmp, ',');
+        double tmp_int = std::stod(tmp);
+        result.back().emplace_back(tmp_int);
 
-            // Initialize and add <colname, int vector> pairs to result
-            result.push_back({ colname, std::vector<double> {} });
+        while(std::getline(ss,tmp, ','))
+        {
+            double tmp_int = std::stod(tmp);
+            tmp_int = (tmp_int > 0.0) ? 1.0 : 0.0;
+            result.back().emplace_back(tmp_int);
         }
+        result.emplace_back();
     }
-
-    // Read data, line by line
-    while (std::getline(myFile, line))
-    {
-        // Create a stringstream of the current line
-        std::stringstream ss(line);
-
-        // Keep track of the current column index
-        int colIdx = 0;
-
-        // Extract each integer
-        while (ss >> val) {
-
-            // Add the current integer to the 'colIdx' column's values vector
-            result.at(colIdx).second.push_back(val);
-
-            // If the next token is a comma, ignore it and move on
-            if (ss.peek() == ',') ss.ignore();
-
-            // Increment the column index
-            colIdx++;
-        }
-    }
-
-    // Close file
-    myFile.close();
+    CSV_File.close();
+    while (result.back().empty()) result.pop_back();
     return result;
+}
+void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber)
+{
+    std::cout << "Expected value: " << label << std::endl;
+    std::cout << "Network output: " << index << std::endl;
+    std::cout << "Exact probability: ";
+    for (const double val : resultValues)
+        std::cout << val << " ";
+    std::cout << std::endl;
+    std::cout << "Average Error: " << averageError << std::endl;
+    std::cout << std::endl;
+
+    if (!printNumber)
+    {
+        std::cout << "=========================================================" << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < 28; ++i)
+    {
+        for (int j = 0; j < 28; ++j)
+        {
+            if (inputValues[28 * i + j] == 0.0) std::cout << " ";
+            else std::cout << "S";
+        }
+        std::cout << std::endl;
+    }
+
+    std::cout << "=========================================================" << std::endl;
+}
+void testNetwork(const std::vector<std::vector<double>>& trainSamples, const std::vector<std::vector<double>>& testSamples, float eta_divider, float alpha_divider)
+{
+    const std::vector<int> topology = { 784,128,64,10 };
+    float eta = rand() / float(RAND_MAX);
+	float alpha = rand() / float(RAND_MAX);
+    eta = eta / eta_divider;
+    alpha = alpha / alpha_divider;
+    std::cout << "eta: " << eta << " alpha: " << alpha << " ";
+	
+    Net MyNetwork(topology, eta, alpha);
+
+    //train
+    for (auto trainSample : trainSamples)
+    {
+        const int label = trainSample[0];
+
+        std::vector<double> targetValues(10, 0.0);
+        targetValues[label] = 1.0;
+        trainSample.erase(trainSample.begin());
+
+        MyNetwork.FeedForward(trainSample);
+        MyNetwork.BackPropagation(targetValues);
+
+        //std::vector<double> resultValues = MyNetwork.GetResults();
+        //resultValues.pop_back();
+
+        //const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
+        //const auto max_element_index = std::distance(resultValues.begin(), max_element);
+        //printValues(label, max_element_index, resultValues, trainSample, MyNetwork.AverageGetError(), false);
+    }
+
+    //test
+   
+    double correct_predictions = 0.0;
+    for (auto testSample : testSamples)
+    {
+        const int label = testSample[0];
+
+        std::vector<double> targetValues(10, 0.0);
+        targetValues[label] = 1.0;
+        testSample.erase(testSample.begin());
+        MyNetwork.FeedForward(testSample);
+        std::vector<double> resultValues = MyNetwork.GetResults();
+
+        resultValues.pop_back();
+        const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
+        const auto max_element_index = std::distance(resultValues.begin(), max_element);
+        if (label == max_element_index) correct_predictions += 1.0;
+
+        //printValues(label, max_element_index, resultValues, testSample, MyNetwork.AverageGetError(), true);
+    }
+    std::cout << correct_predictions / 10000 << std::endl;
 }
 
 int main()
 {
-    std::vector<int> topology = { 784,128,64,10 };
-
-    std::vector<std::pair<std::string, std::vector<double>>> result = read_csv();
-    
-
-    std::vector<double> label = result[0].second;
-
-    Net MyNetwork(topology);
-
-    for(size_t i = 1; i < result[0].second.size(); i++)
+    const auto trainSamples = read_csv("train.csv");
+    const auto testSamples = read_csv("test.csv");
+    for (int i = 0; i < 200; i++)
     {
-        std::vector<double> targetValues;
-        for(int j = 0; j < 10; j++)
-        {
-            if (j == label[i]) targetValues.push_back(1);
-            else targetValues.push_back(0);
-        }
-        std::vector<double> inputValues;
-        for(int h = 1; h < result.size(); h++)
-        {
-            inputValues.emplace_back(result[h].second.at(i));
-        }
-        MyNetwork.FeedForward(inputValues);
-        MyNetwork.BackPropagation(targetValues);
-        std::vector<double> resultValues = MyNetwork.GetResults();
-
-        std::cout <<"Expected value: " << label[i] << std::endl;
-
-        resultValues.pop_back();
-        int position = 0;
-        double max = -5;
-        for (int o = 0; o < resultValues.size(); o++)
-        {
-	        if (resultValues[o] > max)
-	        {
-                position = o;
-                max = resultValues[o];
-	        }
-        }
-        std::cout << "Network output: " << position << std::endl;
-        std::cout << "Exact probability: ";
-        for (double val : resultValues)
-            std::cout << val << " ";
-
-        std::cout<<std::endl;
-        std::cout << "Average Error: " << MyNetwork.AvarageGetError() << std::endl;
-        std::cout << "=========================================================" << std::endl;
+        const float eta_divider = 4;
+        const float alpha_divider = 2;
+        testNetwork(trainSamples, testSamples, eta_divider, alpha_divider);
     }
 }
 
