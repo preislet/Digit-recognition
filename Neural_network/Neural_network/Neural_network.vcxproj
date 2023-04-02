@@ -127,10 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Image_conversion.cpp" />
     <ClCompile Include="Neural_network.cpp" />
     <ClCompile Include="Neural_network_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Image_conversion.hpp" />
     <ClInclude Include="Neural_network.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
