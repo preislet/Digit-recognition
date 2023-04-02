@@ -3,243 +3,448 @@
 #include<algorithm>
 #include<string>
 #include<cassert>
+#include<fstream>
+#include<sstream>
 
+#include "Neural_network.hpp"
 class Neuron;
+class Net;
 using Layer = std::vector<Neuron>;
 
-// eta 0,5, alpha 0.1 - 0,55
-// eta 0,3, alpha 0.5 - 0,57
-// eta 0,5, alpha 0.5 - 0,583
-// eta 0,6, alpha 0.5 - 0,686
-// eta 0,65, alpha 0.6 - 0.672
-// eta 0,6, alpha 0.65 - 0.59
-// eta 0,62, alpha 0.5 - 0.58
-// eta 0,7, alpha 0.7 - 0.58
-// eta 0,2, alpha 0,1 - 0,64
-// eta 0,1, alpha 0,1 - 0,65 
-
-/* Overall net training rate [0.0 ... 1.0]
-	 * 0.0 - slow learner
-	 * 0,2 - medium learner
-	 * 1.0 - reckless learner
-	 */
-//constexpr static double eta = 0.3;
-
-/* Momentum [0.0 ... n]
- * 0.0 - no momentum
- * 0.5 - moderate momentum
- */
-//constexpr static double alpha = 0.1;
-
-struct RMSError
+//Constructor for the Connection class, which initializes the weight of the connection to a random value and sets the delta weight to 0.
+::Connection::Connection()
 {
-	double error = 0;
-	double recentAverageError = 0;
-	double recentAverageSmoothingFactor = 100;
-};
+	this->weight = RandomNumber();
+	this->deltaWeight = 0;
+}
 
-struct Connection
+//Helper function that generates a random number between 0 and 1 for use in initializing connection weights.
+double ::Connection::RandomNumber() { return rand() / double(RAND_MAX);}
+
+/*Constructor for the Neuron class, which takes as arguments the number of connections to the next layer, the index of the neuron in the current layer,
+ and the learning rate (eta) and momentum (alpha) values. It initializes the neuron's output value and gradient to 0, and creates a vector of output weights
+ with random initial weights.*/
+::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha)
 {
-	double weight;
-	double deltaWeight;
-	Connection()
+	this->numberOfConnections = numberOfConnections;
+	this->index = index;
+	this->eta = eta;
+	this->alpha = alpha;
+	outputValue = 0;
+	gradient = 0;
+	for (int i = 0; i < numberOfConnections; ++i)
 	{
-		this->weight = RandomNumber();
-		this->deltaWeight = 0;
+		outputWeights.emplace_back(Connection());
 	}
-private:
-	static double RandomNumber() { return rand() / double(RAND_MAX); }
-};
+}
 
-class Neuron
+//Setter function for the output value of a neuron.
+void Neuron::SetOutputValue(const double outVal) { outputValue = outVal; }
+
+//Calculates the output value of a neuron based on the weighted sum of the previous layer's output values and the neuron's activation function.
+void Neuron::FeedForward(const Layer& previousLayer)
 {
-private:
-	int numberOfConnections;
-	int index;
-	double eta;
-	double alpha;
+	double sumOfPreviousLayer = 0;
 
-	double outputValue;
-	double gradient;
+	for (const Neuron& neuron : previousLayer)
+		sumOfPreviousLayer += neuron.GetOutputValue() * neuron.outputWeights[index].weight;
 
-	std::vector<Connection> outputWeights;
+	outputValue = ActivationFunction(sumOfPreviousLayer);
+}
 
-	static double ActivationFunction(double sumOfPreviousLayer) { return 1 / (1 + exp(-sumOfPreviousLayer)); }
+//Calculates the gradient of a neuron's output value based on the difference between the target output value and the actual output value, multiplied by the derivative of the neuron's activation function.
+void Neuron::CalculateOutputGradients(const double targetValue) { gradient = (targetValue - outputValue) * ActivationFunctionDerivative(outputValue); }
 
-	static double ActivationFunctionDerivative(double Value) { return (1 / (1 + exp(-Value))) * (1 - 1 / (1 + exp(-Value))); }
+/*Calculates the gradient of a hidden neuron's output value based on the sum of the derivatives of the weights of the next layer multiplied by the gradients of the neurons in the next layer,
+ all multiplied by the derivative of the neuron's activation function.*/
+void Neuron::CalculateHiddenGradient(const Layer& nextLayer)
+{
+	const double DerivativeOfWeightsOfNextLayer = SumDerivationsOfWeightsOfNextLayer(nextLayer);
+	gradient = DerivativeOfWeightsOfNextLayer * ActivationFunctionDerivative(outputValue);
+}
 
-	double SumDerivationsOfWeightsOfNextLayer(const Layer& nextLayer) const
+/*Updates the weights of the connections between the previous layer and the neuron, based on the neuron's gradient and the output value of the previous layer neurons,
+ using the learning rate (eta) and momentum (alpha) values.*/
+void Neuron::UpdatedInputWeights(Layer& prevLayer) const
+{
+	for (Neuron& neuron : prevLayer)
 	{
-		double SumOfDerivationsOfWeightsOfNextLayer = 0;
-		for (unsigned int NeuronNum = 0; NeuronNum < nextLayer.size() - 1; ++NeuronNum)
-			SumOfDerivationsOfWeightsOfNextLayer += outputWeights[NeuronNum].weight * nextLayer[NeuronNum].gradient;
-		return SumOfDerivationsOfWeightsOfNextLayer;
+		const double CurrentDeltaWeight = neuron.outputWeights[index].deltaWeight;
+		const double NewDeltaWeight = eta * neuron.outputValue * gradient + alpha * CurrentDeltaWeight;
+
+		neuron.outputWeights[index].deltaWeight = NewDeltaWeight;
+		neuron.outputWeights[index].weight += NewDeltaWeight;
 	}
-public:
-	Neuron(int numberOfConnections, int index, double eta, double alpha)
+}
+
+//Inserts weights to outputWeights vector 
+void Neuron::InsertWeights(const std::vector<double> &weight)
+{
+	for(size_t i = 0; i < weight.size(); ++i)
+		outputWeights[i].weight = weight[i];
+}
+
+//Implements the sigmoid activation function for a neuron.
+double Neuron::ActivationFunction(double sumOfPreviousLayer) { return 1 / (1 + exp(-sumOfPreviousLayer)); }
+
+//Calculates the derivative of the sigmoid activation function for a neuron.
+double Neuron::ActivationFunctionDerivative(double Value) { return (1 / (1 + exp(-Value))) * (1 - 1 / (1 + exp(-Value)));}
+
+//Calculates the sum of the derivatives of the weights of the next layer for a neuron.
+double Neuron::SumDerivationsOfWeightsOfNextLayer(const Layer& nextLayer) const
+{
+	double SumOfDerivationsOfWeightsOfNextLayer = 0;
+	for (unsigned int NeuronNum = 0; NeuronNum < nextLayer.size() - 1; ++NeuronNum)
+		SumOfDerivationsOfWeightsOfNextLayer += outputWeights[NeuronNum].weight * nextLayer[NeuronNum].gradient;
+	return SumOfDerivationsOfWeightsOfNextLayer;
+}
+
+//Getter function for the output value of a neuron.
+double Neuron::GetOutputValue() const { return outputValue; }
+std::vector<double> Neuron::GetWeights() const
+{
+	std::vector<double> neuronWeights;
+	neuronWeights.reserve(outputWeights.size());
+	for (const auto &connection: outputWeights)
 	{
-		this->numberOfConnections = numberOfConnections;
-		this->index = index;
-		this->eta = eta;
-		this->alpha = alpha;
-		outputValue = 0;
-		gradient = 0;
-		for (int i = 0; i < numberOfConnections; ++i)
+		neuronWeights.push_back(connection.weight);
+	}
+	return neuronWeights;
+}
+
+/*Constructor for the Net class, which takes as argument a vector of integers specifying the number of neurons in each layer, and the learning rate (eta) and momentum (alpha) values.
+ It creates the layers of neurons, initializing the weights of the output connections randomly, and sets the output value of the bias neuron in each layer to 1.0.*/
+Net::Net(const std::vector<int>& topology, double eta, double alpha)
+{
+	this->topology = topology;
+
+	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
+	{
+		int numOfOutputs;
+		if (NumOfLayer == topology.size() - 1) { numOfOutputs = 0; } //Last layer -> no output
+		else numOfOutputs = topology[NumOfLayer + 1];
+
+		Layer tmpLayer;
+		for (int neuronNum = 0; neuronNum <= topology[NumOfLayer]; ++neuronNum)
+			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha));
+
+		tmpLayer[tmpLayer.size() - 1].SetOutputValue(1.0); //OutputValue of BiasNeuron
+		layers.emplace_back(tmpLayer);
+	}
+}
+
+//Calculates the root mean square (RMS) error between the output values of the network and the target output values.
+void Net::CalculateRMS_error(const std::vector<double>& targetValues)
+{
+	const Layer& outputLayer = layers[layers.size() - 1];
+
+	const unsigned int NumOfOutputNeuronsWithoutBiasNeuron = layers[layers.size() - 1].size() - 1;
+
+	for (unsigned int NumOfNeuron = 0; NumOfNeuron < NumOfOutputNeuronsWithoutBiasNeuron; ++NumOfNeuron)
+		RMS_error.error += pow(targetValues[NumOfNeuron] - outputLayer[NumOfNeuron].GetOutputValue(), 2);
+
+	RMS_error.error = sqrt(RMS_error.error / NumOfOutputNeuronsWithoutBiasNeuron);
+}
+
+//Calculates a rolling average of the RMS error over the most recent iterations, using a smoothing factor to weight the contributions of each iteration.
+void Net::CalculateRecentAverageError()
+{
+	RMS_error.recentAverageError = (RMS_error.recentAverageError * RMS_error.recentAverageSmoothingFactor + RMS_error.error) / (RMS_error.recentAverageSmoothingFactor + 1);
+}
+
+/*Calculates the gradients of the output neurons in the network, based on the difference between the target output values and the actual output values,
+ multiplied by the derivative of the activation function.*/
+void Net::CalculateOutputLayerGradients(const std::vector<double>& targetValues)
+{
+	Layer& outputLayer = layers[layers.size() - 1];
+
+	const unsigned int NumOfOutputNeuronsWithoutBiasNeuron = layers[layers.size() - 1].size() - 1;
+
+	for (unsigned int NumOfNeuron = 0; NumOfNeuron < NumOfOutputNeuronsWithoutBiasNeuron; ++NumOfNeuron)
+	{
+		outputLayer[NumOfNeuron].CalculateOutputGradients(targetValues[NumOfNeuron]);
+	}
+}
+
+/*Calculates the gradients of the hidden neurons in the network, based on the derivatives of the weights of the next layer and the gradients of the neurons in the next layer, multiplied by the derivative of the activation function.
+It calls the CalculateHiddenGradient() function for each hidden neuron in each hidden layer of the network.*/
+void Net::CalculateHiddenLayersGradients()
+{
+	const unsigned int NumOfLayersWithoutOutputLayer = layers.size() - 2;
+
+	for (unsigned int NumOfLayer = NumOfLayersWithoutOutputLayer; NumOfLayer > 0; --NumOfLayer)
+	{
+		Layer& CurrentHiddenLayer = layers[NumOfLayer];
+		Layer& NextLayer = layers[NumOfLayer + 1];
+
+		for (Neuron& neuron : CurrentHiddenLayer)
+			neuron.CalculateHiddenGradient(NextLayer);
+	}
+}
+
+/*This function updates the weights of the neural network based on the calculated gradients and the learning rate.
+ *It uses the back propagation algorithm to adjust the weights in the direction that minimizes the error.*/
+void Net::UpdateConnectionWeights()
+{
+	for (unsigned int LayerNum = layers.size() - 1; LayerNum > 0; --LayerNum)
+	{
+		Layer& currentLayer = layers[LayerNum];
+		Layer& previousLayer = layers[LayerNum - 1];
+
+		for (unsigned int neuronNum = 0; neuronNum < currentLayer.size() - 1; ++neuronNum)
 		{
-			outputWeights.emplace_back(Connection());
+			Neuron& neuron = currentLayer[neuronNum];
+			neuron.UpdatedInputWeights(previousLayer);
 		}
 	}
-
-	void SetOutputValue(const double outVal) { outputValue = outVal; }
-	double GetOutputValue() const { return outputValue; }
-
-	void FeedForward(const Layer& previousLayer)
-	{
-		double sumOfPreviousLayer = 0;
-
-		for (const Neuron& neuron : previousLayer)
-			sumOfPreviousLayer += neuron.GetOutputValue() * neuron.outputWeights[index].weight;
-
-		outputValue = ActivationFunction(sumOfPreviousLayer);
-	}
-	void CalculateOutputGradients(const double targetValue)
-	{
-		gradient = (targetValue - outputValue) * ActivationFunctionDerivative(outputValue);
-	}
-	void CalculateHiddenGradient(const Layer& nextLayer)
-	{
-		const double DerivativeOfWeightsOfNextLayer = SumDerivationsOfWeightsOfNextLayer(nextLayer);
-		gradient = DerivativeOfWeightsOfNextLayer * ActivationFunctionDerivative(outputValue);
-	}
-	void UpdatedInputWeights(Layer& prevLayer) const
-	{
-		for (Neuron& neuron : prevLayer)
-		{
-			const double CurrentDeltaWeight = neuron.outputWeights[index].deltaWeight;
-			const double NewDeltaWeight = eta * neuron.outputValue * gradient + alpha * CurrentDeltaWeight;
-
-			neuron.outputWeights[index].deltaWeight = NewDeltaWeight;
-			neuron.outputWeights[index].weight += NewDeltaWeight;
-		}
-	}
-};
-
-class Net
+}
+void Net::InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights)
 {
-private:
-
-	std::vector<int> topology;
-	std::vector<Layer> layers;
-	RMSError RMS_error;
-
-
-	void CalculateRMS_error(const std::vector<double>& targetValues)
+	for (size_t layerIndex = 0; layerIndex < layers.size() - 1; ++layerIndex)
 	{
-		const Layer& outputLayer = layers[layers.size() - 1];
-
-		const unsigned int NumOfOutputNeuronsWithoutBiasNeuron = layers[layers.size() - 1].size() - 1;
-
-		for (unsigned int NumOfNeuron = 0; NumOfNeuron < NumOfOutputNeuronsWithoutBiasNeuron; ++NumOfNeuron)
-			RMS_error.error += pow(targetValues[NumOfNeuron] - outputLayer[NumOfNeuron].GetOutputValue(), 2);
-
-		RMS_error.error = sqrt(RMS_error.error / NumOfOutputNeuronsWithoutBiasNeuron);
-	}
-	void CalculateRecentAverageError()
-	{
-		RMS_error.recentAverageError = (RMS_error.recentAverageError * RMS_error.recentAverageSmoothingFactor + RMS_error.error) / (RMS_error.recentAverageSmoothingFactor + 1);
-	}
-	void CalculateOutputLayerGradients(const std::vector<double>& targetValues)
-	{
-		Layer& outputLayer = layers[layers.size() - 1];
-
-		const unsigned int NumOfOutputNeuronsWithoutBiasNeuron = layers[layers.size() - 1].size() - 1;
-
-		for (unsigned int NumOfNeuron = 0; NumOfNeuron < NumOfOutputNeuronsWithoutBiasNeuron; ++NumOfNeuron)
+		for (size_t NeuronIndex = 0; NeuronIndex < layers[layerIndex].size(); ++NeuronIndex)
 		{
-			outputLayer[NumOfNeuron].CalculateOutputGradients(targetValues[NumOfNeuron]);
+			layers[layerIndex][NeuronIndex].InsertWeights(weights[layerIndex][NeuronIndex]);
 		}
 	}
-	void CalculateHiddenLayersGradients()
+}
+
+//Feeds forward the input values through the network, calculating the output values for each neuron using the FeedForward() function.
+void Net::FeedForward(const std::vector<double>& inputValues)
+{
+	assert(inputValues.size() == layers[0].size() - 1);
+	for (int i = 0; i < inputValues.size(); ++i)
+		layers[0][i].SetOutputValue(inputValues[i]);
+
+	for (unsigned int layerNum = 1; layerNum < layers.size(); ++layerNum)
+		for (unsigned int NeuronNum = 0; NeuronNum < layers[layerNum].size() - 1; ++NeuronNum)
+			layers[layerNum][NeuronNum].FeedForward(layers[layerNum - 1]);
+}
+void Net::BackPropagation(const std::vector<double>& targetValues)
+{
+	CalculateRMS_error(targetValues);
+	CalculateRecentAverageError();
+
+	CalculateOutputLayerGradients(targetValues);
+
+	CalculateHiddenLayersGradients();
+
+	UpdateConnectionWeights();
+}
+std::vector<std::vector<std::vector<double>>> Net::GetWeights() const
+{
+	std::vector<std::vector<std::vector<double>>> allWeights;
+	for (const auto& layer : layers)
 	{
-		const unsigned int NumOfLayersWithoutOutputLayer = layers.size() - 2;
-
-		for (unsigned int NumOfLayer = NumOfLayersWithoutOutputLayer; NumOfLayer > 0; --NumOfLayer)
+		std::vector<std::vector<double>> layerWeights;
+		for (const auto& neuron : layer)
 		{
-			Layer& CurrentHiddenLayer = layers[NumOfLayer];
-			Layer& NextLayer = layers[NumOfLayer + 1];
-
-			for (Neuron& neuron : CurrentHiddenLayer)
-				neuron.CalculateHiddenGradient(NextLayer);
+			std::vector<double> neuronWeights = neuron.GetWeights();
+			layerWeights.emplace_back(neuronWeights);
 		}
+		allWeights.emplace_back(layerWeights);
 	}
-	void UpdateConnectionWeights()
-	{
-		for (unsigned int LayerNum = layers.size() - 1; LayerNum > 0; --LayerNum)
-		{
-			Layer& currentLayer = layers[LayerNum];
-			Layer& previousLayer = layers[LayerNum - 1];
+	return allWeights;
+}
 
-			for (unsigned int neuronNum = 0; neuronNum < currentLayer.size() - 1; ++neuronNum)
+/*This function returns the topology of the neural network as a vector. The first element of the vector is the number of input neurons,
+ *the last element is the number of output neurons, and all other elements are the number of neurons in each hidden layer.*/
+std::vector<int> Net::GetTopology() const
+{
+	return topology;
+}
+
+double Net::AverageGetError() const {return RMS_error.recentAverageError;}
+
+//Return final values stored in output neurons
+std::vector<double> Net::GetResults() const
+{
+	std::vector<double> resultValues;
+	const Layer& outputLayer = layers[layers.size() - 1];
+	for (const Neuron& neuron : outputLayer)
+		resultValues.emplace_back(neuron.GetOutputValue());
+	return resultValues;
+}
+
+
+/*This function takes in several parameters related to a neural network and prints them to the console.
+ It first prints the expected label and the network output index, followed by the exact probability values obtained from the network.
+ It then prints the average error and a blank line. Finally, if the boolean parameter printNumber is true, it prints the input values as a 28x28 grid of characters
+ ('S' for non-zero values and ' ' for zero values)*/
+void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber)
+{
+	std::cout << "Expected value: " << label << std::endl;
+	std::cout << "Network output: " << index << std::endl;
+	std::cout << "Exact probability: ";
+	for (const double val : resultValues)
+		std::cout << val << " ";
+	std::cout << std::endl;
+	std::cout << "Average Error: " << averageError << std::endl;
+	std::cout << std::endl;
+
+	if (!printNumber)
+	{
+		std::cout << "=========================================================" << std::endl;
+		return;
+	}
+
+	for (int i = 0; i < 28; ++i)
+	{
+		for (int j = 0; j < 28; ++j)
+		{
+			if (inputValues[28 * i + j] == 0.0) std::cout << " ";
+			else std::cout << "S";
+		}
+		std::cout << std::endl;
+	}
+
+	std::cout << "=========================================================" << std::endl;
+}
+
+/*This function takes in a reference to a Net object (a neural network) and a vector of input training samples, and updates the network's weights using back propagation.
+ For each sample in the vector, it extracts the label and target values, feeds the input forward through the network, and performs back propagation to update the weights based on the
+ error between the output and target values.*/
+void TrainNetwork(::Net& MyNetwork, const std::vector<std::vector<double>>& trainSamples)
+{
+	for (auto trainSample : trainSamples)
+	{
+		const int label = trainSample[0];
+
+		std::vector<double> targetValues(10, 0.0);
+		targetValues[label] = 1.0;
+		trainSample.erase(trainSample.begin());
+
+		MyNetwork.FeedForward(trainSample);
+		MyNetwork.BackPropagation(targetValues);
+
+		//std::vector<double> resultValues = MyNetwork.GetResults();
+		//resultValues.pop_back();
+
+		//const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
+		//const auto max_element_index = std::distance(resultValues.begin(), max_element);
+		//printValues(label, max_element_index, resultValues, trainSample, MyNetwork.AverageGetError(), false);
+	}
+}
+
+/*his function takes in a reference to a Net object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
+ It iterates through the test samples, extracts the label and target values, feeds the input forward through the network, and compares the network's output to the true label
+ to count the number of correct predictions. If the print flag is true, it also calls the */
+double testNetwork(::Net& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
+{
+	double correct_predictions = 0.0;
+	for (auto testSample : testSamples)
+	{
+		const int label = testSample[0];
+
+		std::vector<double> targetValues(10, 0.0);
+		targetValues[label] = 1.0;
+		testSample.erase(testSample.begin());
+		MyNetwork.FeedForward(testSample);
+		std::vector<double> resultValues = MyNetwork.GetResults();
+
+		resultValues.pop_back();
+		const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
+		const auto max_element_index = std::distance(resultValues.begin(), max_element);
+		if (label == max_element_index) correct_predictions += 1.0;
+
+		if(print) printValues(label, max_element_index, resultValues, testSample, MyNetwork.AverageGetError(), true);
+	}
+	std::cout << correct_predictions / testSamples.size() << std::endl;
+	return correct_predictions / testSamples.size();
+}
+
+/*his function takes in a file path and reads in a CSV file containing input data for a neural network.
+ It returns a vector of vectors of doubles, where each inner vector corresponds to a row of data in the CSV file.*/
+std::vector<std::vector<double>> read_csv(const std::string& path)
+{
+	std::ifstream CSV_File(path);
+	std::string line;
+
+	std::vector<std::vector<double>> result;
+	result.emplace_back();
+	if (CSV_File.good()) std::getline(CSV_File, line); //extract names of column
+
+	while (std::getline(CSV_File, line))
+	{
+		std::stringstream ss(line);
+		std::string tmp;
+
+		std::getline(ss, tmp, ',');
+		double tmp_int = std::stod(tmp);
+		result.back().emplace_back(tmp_int);
+
+		while (std::getline(ss, tmp, ','))
+		{
+			double tmp_int = std::stod(tmp);
+			tmp_int = (tmp_int > 0.0) ? 1.0 : 0.0;
+			result.back().emplace_back(tmp_int);
+		}
+		result.emplace_back();
+	}
+	CSV_File.close();
+	while (result.back().empty()) result.pop_back();
+	return result;
+}
+
+/*his function takes in a Net object and writes its weights to a text file in a specific format.
+ The weights are stored in a 3D vector, where each layer of the network is a matrix of weights between neurons.
+ The function iterates through the layers and matrices of weights, writing each weight to a new line in the file.*/
+void writeWeightsToFile(const Net& MyNetwork)
+{
+	std::ofstream outputFile("weights.txt");
+	const auto outputWeightsVector = MyNetwork.GetWeights();
+	if (outputFile.is_open())
+	{
+		for (size_t i = 0; i < outputWeightsVector.size(); i++)
+		{
+			for (size_t j = 0; j < outputWeightsVector[i].size(); j++)
 			{
-				Neuron& neuron = currentLayer[neuronNum];
-				neuron.UpdatedInputWeights(previousLayer);
+				for (size_t k = 0; k < outputWeightsVector[i][j].size(); k++)
+				{
+					outputFile << outputWeightsVector[i][j][k];
+					if (k < outputWeightsVector[i][j].size() - 1)
+					{
+						outputFile << " ";
+					}
+				}
+				outputFile << "\n";
 			}
 		}
+		outputFile.close();
+		std::cout << "3D vector written to file successfully!" << std::endl;
 	}
-public:
-	double AverageGetError() const
+	else
 	{
-		return RMS_error.recentAverageError;
+		std::cout << "Unable to open file!" << std::endl;
 	}
-	Net(const std::vector<int>& topology, double eta, double alpha)
-	{
-		this->topology = topology;
+}
 
-		for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
+/*This function takes in a Net object and reads in a text file containing weights in the same format as written by writeWeightsToFile.
+ It extracts the weights from the file and inserts them into the Net object, replacing the existing weights. It assumes that the topology of the Net object matches the topology used to
+ write the weights to the file.*/
+void insertWeightsToNet(Net& MyNetwork)
+{
+	std::ifstream weightsFile("weights.txt");
+	std::string line;
+	std::vector<std::vector<std::vector<double>>> weights;
+	std::vector<int> Net_topology = MyNetwork.GetTopology();
+	Net_topology.pop_back();
+	for(auto topology: Net_topology)
+	{
+		std::vector<std::vector<double>> layer;
+		for (size_t i = 0; i <= topology; ++i)
 		{
-			int numOfOutputs;
-			if (NumOfLayer == topology.size() - 1) { numOfOutputs = 0; } //Last layer -> no output
-			else numOfOutputs = topology[NumOfLayer + 1];
-
-			Layer tmpLayer;
-			for (int neuronNum = 0; neuronNum <= topology[NumOfLayer]; ++neuronNum)
-				tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha));
-
-			tmpLayer[tmpLayer.size() - 1].SetOutputValue(1.0); //OutputValue of BiasNeuron
-			layers.emplace_back(tmpLayer);
+			std::vector<double> neuron;
+			std::getline(weightsFile, line);
+			std::stringstream ss(line);
+			while (getline(ss, line, ' '))
+			{
+				neuron.emplace_back(std::stod(line));
+			}
+			layer.emplace_back(neuron);
 		}
+		weights.emplace_back(layer);
 	}
+	MyNetwork.InsertWeights(weights);
 
-	void FeedForward(const std::vector<double>& inputValues)
-	{
-		assert(inputValues.size() == layers[0].size() - 1);
-		for (int i = 0; i < inputValues.size(); ++i)
-			layers[0][i].SetOutputValue(inputValues[i]);
-
-		for (unsigned int layerNum = 1; layerNum < layers.size(); ++layerNum)
-			for (unsigned int NeuronNum = 0; NeuronNum < layers[layerNum].size() - 1; ++NeuronNum)
-				layers[layerNum][NeuronNum].FeedForward(layers[layerNum - 1]);
-	}
-
-	void BackPropagation(const std::vector<double>& targetValues)
-	{
-		CalculateRMS_error(targetValues);
-		CalculateRecentAverageError();
-
-		CalculateOutputLayerGradients(targetValues);
-
-		CalculateHiddenLayersGradients();
-
-		UpdateConnectionWeights();
-	}
-	std::vector<double> GetResults() const
-	{
-		std::vector<double> resultValues;
-		const Layer& outputLayer = layers[layers.size() - 1];
-		for (const Neuron& neuron : outputLayer)
-			resultValues.emplace_back(neuron.GetOutputValue());
-		return resultValues;
-	}
-
-
-};
+}
