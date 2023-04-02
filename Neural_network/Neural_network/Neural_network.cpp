@@ -8,7 +8,7 @@
 
 #include "Neural_network.hpp"
 class Neuron;
-class Net;
+class NeuralNet;
 using Layer = std::vector<Neuron>;
 
 //Constructor for the Connection class, which initializes the weight of the connection to a random value and sets the delta weight to 0.
@@ -112,9 +112,9 @@ std::vector<double> Neuron::GetWeights() const
 	return neuronWeights;
 }
 
-/*Constructor for the Net class, which takes as argument a vector of integers specifying the number of neurons in each layer, and the learning rate (eta) and momentum (alpha) values.
+/*Constructor for the NeuralNet class, which takes as argument a vector of integers specifying the number of neurons in each layer, and the learning rate (eta) and momentum (alpha) values.
  It creates the layers of neurons, initializing the weights of the output connections randomly, and sets the output value of the bias neuron in each layer to 1.0.*/
-Net::Net(const std::vector<int>& topology, double eta, double alpha)
+NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha)
 {
 	this->topology = topology;
 
@@ -134,7 +134,7 @@ Net::Net(const std::vector<int>& topology, double eta, double alpha)
 }
 
 //Calculates the root mean square (RMS) error between the output values of the network and the target output values.
-void Net::CalculateRMS_error(const std::vector<double>& targetValues)
+void NeuralNet::CalculateRMS_error(const std::vector<double>& targetValues)
 {
 	const Layer& outputLayer = layers[layers.size() - 1];
 
@@ -147,14 +147,14 @@ void Net::CalculateRMS_error(const std::vector<double>& targetValues)
 }
 
 //Calculates a rolling average of the RMS error over the most recent iterations, using a smoothing factor to weight the contributions of each iteration.
-void Net::CalculateRecentAverageError()
+void NeuralNet::CalculateRecentAverageError()
 {
 	RMS_error.recentAverageError = (RMS_error.recentAverageError * RMS_error.recentAverageSmoothingFactor + RMS_error.error) / (RMS_error.recentAverageSmoothingFactor + 1);
 }
 
 /*Calculates the gradients of the output neurons in the network, based on the difference between the target output values and the actual output values,
  multiplied by the derivative of the activation function.*/
-void Net::CalculateOutputLayerGradients(const std::vector<double>& targetValues)
+void NeuralNet::CalculateOutputLayerGradients(const std::vector<double>& targetValues)
 {
 	Layer& outputLayer = layers[layers.size() - 1];
 
@@ -168,7 +168,7 @@ void Net::CalculateOutputLayerGradients(const std::vector<double>& targetValues)
 
 /*Calculates the gradients of the hidden neurons in the network, based on the derivatives of the weights of the next layer and the gradients of the neurons in the next layer, multiplied by the derivative of the activation function.
 It calls the CalculateHiddenGradient() function for each hidden neuron in each hidden layer of the network.*/
-void Net::CalculateHiddenLayersGradients()
+void NeuralNet::CalculateHiddenLayersGradients()
 {
 	const unsigned int NumOfLayersWithoutOutputLayer = layers.size() - 2;
 
@@ -184,7 +184,7 @@ void Net::CalculateHiddenLayersGradients()
 
 /*This function updates the weights of the neural network based on the calculated gradients and the learning rate.
  *It uses the back propagation algorithm to adjust the weights in the direction that minimizes the error.*/
-void Net::UpdateConnectionWeights()
+void NeuralNet::UpdateConnectionWeights()
 {
 	for (unsigned int LayerNum = layers.size() - 1; LayerNum > 0; --LayerNum)
 	{
@@ -198,7 +198,7 @@ void Net::UpdateConnectionWeights()
 		}
 	}
 }
-void Net::InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights)
+void NeuralNet::InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights)
 {
 	for (size_t layerIndex = 0; layerIndex < layers.size() - 1; ++layerIndex)
 	{
@@ -210,7 +210,7 @@ void Net::InsertWeights(const std::vector<std::vector<std::vector<double>>>& wei
 }
 
 //Feeds forward the input values through the network, calculating the output values for each neuron using the FeedForward() function.
-void Net::FeedForward(const std::vector<double>& inputValues)
+void NeuralNet::FeedForward(const std::vector<double>& inputValues)
 {
 	assert(inputValues.size() == layers[0].size() - 1);
 	for (int i = 0; i < inputValues.size(); ++i)
@@ -220,7 +220,7 @@ void Net::FeedForward(const std::vector<double>& inputValues)
 		for (unsigned int NeuronNum = 0; NeuronNum < layers[layerNum].size() - 1; ++NeuronNum)
 			layers[layerNum][NeuronNum].FeedForward(layers[layerNum - 1]);
 }
-void Net::BackPropagation(const std::vector<double>& targetValues)
+void NeuralNet::BackPropagation(const std::vector<double>& targetValues)
 {
 	CalculateRMS_error(targetValues);
 	CalculateRecentAverageError();
@@ -231,7 +231,7 @@ void Net::BackPropagation(const std::vector<double>& targetValues)
 
 	UpdateConnectionWeights();
 }
-std::vector<std::vector<std::vector<double>>> Net::GetWeights() const
+std::vector<std::vector<std::vector<double>>> NeuralNet::GetWeights() const
 {
 	std::vector<std::vector<std::vector<double>>> allWeights;
 	for (const auto& layer : layers)
@@ -249,15 +249,15 @@ std::vector<std::vector<std::vector<double>>> Net::GetWeights() const
 
 /*This function returns the topology of the neural network as a vector. The first element of the vector is the number of input neurons,
  *the last element is the number of output neurons, and all other elements are the number of neurons in each hidden layer.*/
-std::vector<int> Net::GetTopology() const
+std::vector<int> NeuralNet::GetTopology() const
 {
 	return topology;
 }
 
-double Net::AverageGetError() const {return RMS_error.recentAverageError;}
+double NeuralNet::AverageGetError() const {return RMS_error.recentAverageError;}
 
 //Return final values stored in output neurons
-std::vector<double> Net::GetResults() const
+std::vector<double> NeuralNet::GetResults() const
 {
 	std::vector<double> resultValues;
 	const Layer& outputLayer = layers[layers.size() - 1];
@@ -301,10 +301,10 @@ void printValues(const int label, const ptrdiff_t index, const std::vector<doubl
 	std::cout << "=========================================================" << std::endl;
 }
 
-/*This function takes in a reference to a Net object (a neural network) and a vector of input training samples, and updates the network's weights using back propagation.
+/*This function takes in a reference to a NeuralNet object (a neural network) and a vector of input training samples, and updates the network's weights using back propagation.
  For each sample in the vector, it extracts the label and target values, feeds the input forward through the network, and performs back propagation to update the weights based on the
  error between the output and target values.*/
-void TrainNetwork(::Net& MyNetwork, const std::vector<std::vector<double>>& trainSamples)
+void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples)
 {
 	for (auto trainSample : trainSamples)
 	{
@@ -326,10 +326,10 @@ void TrainNetwork(::Net& MyNetwork, const std::vector<std::vector<double>>& trai
 	}
 }
 
-/*his function takes in a reference to a Net object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
+/*his function takes in a reference to a NeuralNet object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
  It iterates through the test samples, extracts the label and target values, feeds the input forward through the network, and compares the network's output to the true label
  to count the number of correct predictions. If the print flag is true, it also calls the */
-double testNetwork(::Net& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
+double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
 {
 	double correct_predictions = 0.0;
 	for (auto testSample : testSamples)
@@ -386,10 +386,10 @@ std::vector<std::vector<double>> read_csv(const std::string& path)
 	return result;
 }
 
-/*his function takes in a Net object and writes its weights to a text file in a specific format.
+/*his function takes in a NeuralNet object and writes its weights to a text file in a specific format.
  The weights are stored in a 3D vector, where each layer of the network is a matrix of weights between neurons.
  The function iterates through the layers and matrices of weights, writing each weight to a new line in the file.*/
-void writeWeightsToFile(const Net& MyNetwork)
+void writeWeightsToFile(const NeuralNet& MyNetwork)
 {
 	std::ofstream outputFile("weights.txt");
 	const auto outputWeightsVector = MyNetwork.GetWeights();
@@ -419,10 +419,10 @@ void writeWeightsToFile(const Net& MyNetwork)
 	}
 }
 
-/*This function takes in a Net object and reads in a text file containing weights in the same format as written by writeWeightsToFile.
- It extracts the weights from the file and inserts them into the Net object, replacing the existing weights. It assumes that the topology of the Net object matches the topology used to
+/*This function takes in a NeuralNet object and reads in a text file containing weights in the same format as written by writeWeightsToFile.
+ It extracts the weights from the file and inserts them into the NeuralNet object, replacing the existing weights. It assumes that the topology of the NeuralNet object matches the topology used to
  write the weights to the file.*/
-void insertWeightsToNet(Net& MyNetwork)
+void insertWeightsToNet(NeuralNet& MyNetwork)
 {
 	std::ifstream weightsFile("weights.txt");
 	std::string line;

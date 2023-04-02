@@ -10,7 +10,7 @@
 #include<sstream>
 
 class Neuron;
-class Net;
+class NeuralNet;
 using Layer = std::vector<Neuron>;
 
 struct RMSError {
@@ -54,7 +54,7 @@ public:
     std::vector<double> GetWeights() const;
 };
 
-class Net {
+class NeuralNet {
 private:
     std::vector<int> topology;
     std::vector<Layer> layers;
@@ -67,7 +67,7 @@ private:
     void UpdateConnectionWeights();
 
 public:
-    Net(const std::vector<int>& topology, double eta, double alpha);
+    NeuralNet(const std::vector<int>& topology, double eta, double alpha);
     void FeedForward(const std::vector<double>& inputValues);
     void BackPropagation(const std::vector<double>& targetValues);
     void InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights);
@@ -78,9 +78,9 @@ public:
 };
 std::vector<std::vector<double>> read_csv(const std::string& path);
 void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
-void TrainNetwork(Net& MyNetwork, const std::vector<std::vector<double>>& trainSamples);
-double testNetwork(Net& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print = false);
-void writeWeightsToFile(const Net& MyNetwork);
-void insertWeightsToNet(Net& MyNetwork);
+void TrainNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples);
+double testNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print = false);
+void writeWeightsToFile(const NeuralNet& MyNetwork);
+void insertWeightsToNet(NeuralNet& MyNetwork);
 
 #endif // NEURAL_NET_HPP
