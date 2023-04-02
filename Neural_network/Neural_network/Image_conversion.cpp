@@ -75,6 +75,8 @@ std::vector<std::vector<int>> ConvertToBinVector(const std::vector<std::vector<R
     std::vector<std::vector<int> >INT_vectorTranspose(INT_vector[0].size(), std::vector<int>(INT_vector.size()));
     for (size_t i = 0; i < INT_vector.size(); ++i)
         for (size_t j = 0; j < INT_vector[0].size(); ++j)
+            INT_vectorTranspose[j][i] = INT_vector[i][j];
+
 
     return INT_vectorTranspose;
 }
