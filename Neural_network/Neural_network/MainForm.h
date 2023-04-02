@@ -20,9 +20,6 @@ namespace FormsProject {
 	using namespace System::Drawing;
 	using namespace System::IO;
 
-	/// <summary>
-	/// Summary for MainForm
-	/// </summary>
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public:
