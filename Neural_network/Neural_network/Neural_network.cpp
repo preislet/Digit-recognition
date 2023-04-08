@@ -14,7 +14,7 @@ using Layer = std::vector<Neuron>;
 //Constructor for the Connection class, which initializes the weight of the connection to a random value and sets the delta weight to 0.
 ::Connection::Connection()
 {
-	this->weight = RandomNumber();
+	this->weight = RandomNumber()/1000;
 	this->deltaWeight = 0;
 }
 
@@ -30,6 +30,7 @@ double ::Connection::RandomNumber() { return rand() / double(RAND_MAX);}
 	this->index = index;
 	this->eta = eta;
 	this->alpha = alpha;
+	inputValue = 0;
 	outputValue = 0;
 	gradient = 0;
 	for (int i = 0; i < numberOfConnections; ++i)
@@ -49,18 +50,19 @@ void Neuron::FeedForward(const Layer& previousLayer)
 	for (const Neuron& neuron : previousLayer)
 		sumOfPreviousLayer += neuron.GetOutputValue() * neuron.outputWeights[index].weight;
 
+	inputValue = sumOfPreviousLayer + BIAS;
 	outputValue = ActivationFunction(sumOfPreviousLayer);
 }
 
 //Calculates the gradient of a neuron's output value based on the difference between the target output value and the actual output value, multiplied by the derivative of the neuron's activation function.
-void Neuron::CalculateOutputGradients(const double targetValue) { gradient = (targetValue - outputValue) * ActivationFunctionDerivative(outputValue); }
+void Neuron::CalculateOutputGradients(const double targetValue) { gradient = (targetValue - outputValue) * ActivationFunctionDerivative(inputValue); }
 
 /*Calculates the gradient of a hidden neuron's output value based on the sum of the derivatives of the weights of the next layer multiplied by the gradients of the neurons in the next layer,
  all multiplied by the derivative of the neuron's activation function.*/
 void Neuron::CalculateHiddenGradient(const Layer& nextLayer)
 {
 	const double DerivativeOfWeightsOfNextLayer = SumDerivationsOfWeightsOfNextLayer(nextLayer);
-	gradient = DerivativeOfWeightsOfNextLayer * ActivationFunctionDerivative(outputValue);
+	gradient = DerivativeOfWeightsOfNextLayer * ActivationFunctionDerivative(inputValue);
 }
 
 /*Updates the weights of the connections between the previous layer and the neuron, based on the neuron's gradient and the output value of the previous layer neurons,
@@ -85,16 +87,23 @@ void Neuron::InsertWeights(const std::vector<double> &weight)
 }
 
 //Implements the sigmoid activation function for a neuron.
-double Neuron::ActivationFunction(double sumOfPreviousLayer) { return 1 / (1 + exp(-sumOfPreviousLayer)); }
+double Neuron::ActivationFunction(double sumOfPreviousLayer) {
+	return std::max(sumOfPreviousLayer, 0.0);
+	//return 1 / (1 + exp(-sumOfPreviousLayer));
+}
 
 //Calculates the derivative of the sigmoid activation function for a neuron.
-double Neuron::ActivationFunctionDerivative(double Value) { return (1 / (1 + exp(-Value))) * (1 - 1 / (1 + exp(-Value)));}
+double Neuron::ActivationFunctionDerivative(double Value){
+	if (Value >= 0) return 1;
+	else return 0;
+	//return (1 / (1 + exp(-Value))) * (1 - 1 / (1 + exp(-Value)));
+}
 
 //Calculates the sum of the derivatives of the weights of the next layer for a neuron.
 double Neuron::SumDerivationsOfWeightsOfNextLayer(const Layer& nextLayer) const
 {
 	double SumOfDerivationsOfWeightsOfNextLayer = 0;
-	for (unsigned int NeuronNum = 0; NeuronNum < nextLayer.size() - 1; ++NeuronNum)
+	for (unsigned int NeuronNum = 0; NeuronNum < nextLayer.size(); ++NeuronNum)
 		SumOfDerivationsOfWeightsOfNextLayer += outputWeights[NeuronNum].weight * nextLayer[NeuronNum].gradient;
 	return SumOfDerivationsOfWeightsOfNextLayer;
 }
@@ -125,10 +134,9 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha)
 		else numOfOutputs = topology[NumOfLayer + 1];
 
 		Layer tmpLayer;
-		for (int neuronNum = 0; neuronNum <= topology[NumOfLayer]; ++neuronNum)
+		for (int neuronNum = 0; neuronNum < topology[NumOfLayer]; ++neuronNum)
 			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha));
 
-		tmpLayer[tmpLayer.size() - 1].SetOutputValue(1.0); //OutputValue of BiasNeuron
 		layers.emplace_back(tmpLayer);
 	}
 }
@@ -138,12 +146,10 @@ void NeuralNet::CalculateRMS_error(const std::vector<double>& targetValues)
 {
 	const Layer& outputLayer = layers[layers.size() - 1];
 
-	const unsigned int NumOfOutputNeuronsWithoutBiasNeuron = layers[layers.size() - 1].size() - 1;
-
-	for (unsigned int NumOfNeuron = 0; NumOfNeuron < NumOfOutputNeuronsWithoutBiasNeuron; ++NumOfNeuron)
+	for (unsigned int NumOfNeuron = 0; NumOfNeuron < outputLayer.size(); ++NumOfNeuron)
 		RMS_error.error += pow(targetValues[NumOfNeuron] - outputLayer[NumOfNeuron].GetOutputValue(), 2);
 
-	RMS_error.error = sqrt(RMS_error.error / NumOfOutputNeuronsWithoutBiasNeuron);
+	RMS_error.error = sqrt(RMS_error.error / outputLayer.size());
 }
 
 //Calculates a rolling average of the RMS error over the most recent iterations, using a smoothing factor to weight the contributions of each iteration.
@@ -158,12 +164,9 @@ void NeuralNet::CalculateOutputLayerGradients(const std::vector<double>& targetV
 {
 	Layer& outputLayer = layers[layers.size() - 1];
 
-	const unsigned int NumOfOutputNeuronsWithoutBiasNeuron = layers[layers.size() - 1].size() - 1;
-
-	for (unsigned int NumOfNeuron = 0; NumOfNeuron < NumOfOutputNeuronsWithoutBiasNeuron; ++NumOfNeuron)
-	{
+	for (unsigned int NumOfNeuron = 0; NumOfNeuron < outputLayer.size(); ++NumOfNeuron)
 		outputLayer[NumOfNeuron].CalculateOutputGradients(targetValues[NumOfNeuron]);
-	}
+	
 }
 
 /*Calculates the gradients of the hidden neurons in the network, based on the derivatives of the weights of the next layer and the gradients of the neurons in the next layer, multiplied by the derivative of the activation function.
@@ -191,7 +194,7 @@ void NeuralNet::UpdateConnectionWeights()
 		Layer& currentLayer = layers[LayerNum];
 		Layer& previousLayer = layers[LayerNum - 1];
 
-		for (unsigned int neuronNum = 0; neuronNum < currentLayer.size() - 1; ++neuronNum)
+		for (unsigned int neuronNum = 0; neuronNum < currentLayer.size(); ++neuronNum)
 		{
 			Neuron& neuron = currentLayer[neuronNum];
 			neuron.UpdatedInputWeights(previousLayer);
@@ -212,12 +215,12 @@ void NeuralNet::InsertWeights(const std::vector<std::vector<std::vector<double>>
 //Feeds forward the input values through the network, calculating the output values for each neuron using the FeedForward() function.
 void NeuralNet::FeedForward(const std::vector<double>& inputValues)
 {
-	assert(inputValues.size() == layers[0].size() - 1);
+	assert(inputValues.size() == layers[0].size());
 	for (int i = 0; i < inputValues.size(); ++i)
 		layers[0][i].SetOutputValue(inputValues[i]);
 
 	for (unsigned int layerNum = 1; layerNum < layers.size(); ++layerNum)
-		for (unsigned int NeuronNum = 0; NeuronNum < layers[layerNum].size() - 1; ++NeuronNum)
+		for (unsigned int NeuronNum = 0; NeuronNum < layers[layerNum].size(); ++NeuronNum)
 			layers[layerNum][NeuronNum].FeedForward(layers[layerNum - 1]);
 }
 void NeuralNet::BackPropagation(const std::vector<double>& targetValues)
@@ -342,7 +345,7 @@ double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>
 		MyNetwork.FeedForward(testSample);
 		std::vector<double> resultValues = MyNetwork.GetResults();
 
-		resultValues.pop_back();
+		//resultValues.pop_back();
 		const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
 		const auto max_element_index = std::distance(resultValues.begin(), max_element);
 		if (label == max_element_index) correct_predictions += 1.0;

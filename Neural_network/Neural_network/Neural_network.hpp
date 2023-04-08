@@ -33,7 +33,9 @@ private:
     int index;
     double eta;
     double alpha;
+    static constexpr int BIAS = 1;
 
+    double inputValue;
     double outputValue;
     double gradient;
 
