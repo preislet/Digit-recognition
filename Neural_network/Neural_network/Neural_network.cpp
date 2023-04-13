@@ -87,16 +87,12 @@ void Neuron::InsertWeights(const std::vector<double> &weight)
 }
 
 //Implements the sigmoid activation function for a neuron.
-double Neuron::ActivationFunction(double sumOfPreviousLayer) {
-	return std::max(sumOfPreviousLayer, 0.0);
-	//return 1 / (1 + exp(-sumOfPreviousLayer));
-}
+double Neuron::ActivationFunction(double sumOfPreviousLayer) { return std::max(sumOfPreviousLayer, 0.0);}
 
 //Calculates the derivative of the sigmoid activation function for a neuron.
-double Neuron::ActivationFunctionDerivative(double Value){
+double Neuron::ActivationFunctionDerivative(double Value) {
 	if (Value >= 0) return 1;
 	else return 0;
-	//return (1 / (1 + exp(-Value))) * (1 - 1 / (1 + exp(-Value)));
 }
 
 //Calculates the sum of the derivatives of the weights of the next layer for a neuron.
@@ -329,7 +325,7 @@ void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>
 	}
 }
 
-/*his function takes in a reference to a NeuralNet object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
+/*This function takes in a reference to a NeuralNet object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
  It iterates through the test samples, extracts the label and target values, feeds the input forward through the network, and compares the network's output to the true label
  to count the number of correct predictions. If the print flag is true, it also calls the */
 double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
