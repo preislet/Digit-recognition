@@ -39,16 +39,6 @@ NeuralNetGUI::MainForm::MainForm(void)
 // This is the destructor for the MainForm class, which is responsible for freeing up any allocated memory when the form is closed.
 NeuralNetGUI::MainForm::~MainForm() { if (components) delete components; }
 
-/*This function takes a managed System::String and converts it to an unmanaged std::string.
- It is used to convert the file path of an image from the OpenFileDialog component into a format that can be used by the C++ code.*/
-void NeuralNetGUI::MainForm::MarshalString(String^ s, std::string& os)
-{
-	using namespace Runtime::InteropServices;
-	const char* chars = (const char*)(Marshal::StringToHGlobalAnsi(s)).ToPointer();
-	os = chars;
-	Marshal::FreeHGlobal(IntPtr((void*)chars));
-}
-
 int NeuralNetGUI::MainForm::returnTopBorder(int rows, int columns)
 {
 	int corner;

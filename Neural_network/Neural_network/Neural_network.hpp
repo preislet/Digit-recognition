@@ -83,7 +83,9 @@ private:
     void UpdateConnectionWeights();
 
 public:
+    NeuralNet();
     NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction);
+    void NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction);
     void FeedForward(const std::vector<double>& inputValues);
     void BackPropagation(const std::vector<double>& targetValues);
     void InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights);

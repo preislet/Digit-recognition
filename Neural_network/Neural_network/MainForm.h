@@ -21,6 +21,7 @@ namespace NeuralNetGUI {
 
 	const std::vector<int> topology = { 784,128,64,10 };
 	static NeuralNet DefaultNet(topology, 0.033665, 0.0889798, ActivationFunctions::ReLU);
+	static NeuralNet CustomNet;
 
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
@@ -791,7 +792,6 @@ namespace NeuralNetGUI {
 	private:
 		std::vector<std::vector<double>>TryAllPosition();
 		void fillOutputTable(const std::vector<double>& resultValues);
-		void MarshalString(String^ s, std::string& os);
 		int returnTopBorder(int rows, int columns);
 		int returnBottomBorder(int rows, int columns);
 		int returnLeftBorder(int rows, int columns);

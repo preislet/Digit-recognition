@@ -90,7 +90,7 @@ void Neuron::InsertWeights(const std::vector<double> &weight)
 //Implements the sigmoid activation function for a neuron.
 double Neuron::ActivationFunction(double sumOfPreviousLayer)
 {
-	//TO-DO pridelat funkce
+	//TODO pridelat funkce
 	switch(activationFunctionName)
 	{
 	case ActivationFunctions::Sigmoid:
@@ -122,7 +122,7 @@ double Neuron::ActivationFunction(double sumOfPreviousLayer)
 //Calculates the derivative of the sigmoid activation function for a neuron.
 double Neuron::ActivationFunctionDerivative(double Value) {
 
-	//TO-DO pridelat derivace funkcí
+	//TODO pridelat derivace funkcí
 	switch(activationFunctionName)
 	{
 	case ActivationFunctions::Sigmoid:
@@ -173,9 +173,28 @@ std::vector<double> Neuron::GetWeights() const
 	return neuronWeights;
 }
 
+
+NeuralNet::NeuralNet(){}
 /*Constructor for the NeuralNet class, which takes as argument a vector of integers specifying the number of neurons in each layer, and the learning rate (eta) and momentum (alpha) values.
  It creates the layers of neurons, initializing the weights of the output connections randomly, and sets the output value of the bias neuron in each layer to 1.0.*/
 NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
+{
+	this->topology = topology;
+
+	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
+	{
+		int numOfOutputs;
+		if (NumOfLayer == topology.size() - 1) { numOfOutputs = 0; } //Last layer -> no output
+		else numOfOutputs = topology[NumOfLayer + 1];
+
+		Layer tmpLayer;
+		for (int neuronNum = 0; neuronNum < topology[NumOfLayer]; ++neuronNum)
+			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha, activationFunction));
+
+		layers.emplace_back(tmpLayer);
+	}
+}
+void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
 {
 	this->topology = topology;
 
