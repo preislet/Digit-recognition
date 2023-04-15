@@ -3,7 +3,6 @@
 #include<iostream>
 #include <vector>
 #include<sstream>
-//#include <msclr/marshal_cppstd.h>
 #include "Image_conversion.hpp"
 #include "Neural_network.hpp"
 #using <System.dll>
@@ -21,7 +20,7 @@ namespace NeuralNetGUI {
 	using namespace System::IO;
 
 	const std::vector<int> topology = { 784,128,64,10 };
-	static NeuralNet DefaultNet(topology, 0.033665, 0.0889798);
+	static NeuralNet DefaultNet(topology, 0.033665, 0.0889798, ActivationFunctions::ReLU);
 
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
@@ -789,22 +788,26 @@ namespace NeuralNetGUI {
 		   }
 #pragma endregion
 
-	private: bool clicked = false;
-	private:std::vector<std::vector<double>>TryAllPosition();
-	private: void fillOutputTable(const std::vector<double>& resultValues);
-	private: void MarshalString(String^ s, std::string& os);
-	private: std::vector<double> LoadFromDrawing();
-	private: System::Void custom_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void standard_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void labelDrawClick(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void Start_button_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void clear_button_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void UploadButton_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void button_Up_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void button_left_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void button_down_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void button_right_Click(System::Object^ sender, System::EventArgs^ e);
-	private: System::Void button_trainNeuralNet_Click(System::Object^ sender, System::EventArgs^ e);
+	private:
+		std::vector<std::vector<double>>TryAllPosition();
+		void fillOutputTable(const std::vector<double>& resultValues);
+		void MarshalString(String^ s, std::string& os);
+		int returnTopBorder(int rows, int columns);
+		int returnBottomBorder(int rows, int columns);
+		int returnLeftBorder(int rows, int columns);
+		int returnRightBorder(int rows, int columns);
+		std::vector<double> LoadFromDrawing();
+		System::Void custom_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+		System::Void standard_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+		System::Void labelDrawClick(System::Object^ sender, System::EventArgs^ e);
+		System::Void Start_button_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void clear_button_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void UploadButton_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void button_Up_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void button_left_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void button_down_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void button_right_Click(System::Object^ sender, System::EventArgs^ e);
+		System::Void button_trainNeuralNet_Click(System::Object^ sender, System::EventArgs^ e);
 
 	};
 }

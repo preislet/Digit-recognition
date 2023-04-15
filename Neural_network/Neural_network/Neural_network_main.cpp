@@ -12,8 +12,8 @@ int main(){
 	if (i == 0)
 	{
 		const std::vector<int> topology = { 784,128,64,10 };
-		NeuralNet DefaultNet(topology, 0.033665, 0.0889798);
-		insertWeightsToNet(DefaultNet);
+		NeuralNet DefaultNet(topology, 0.033665, 0.0889798, ActivationFunctions::ReLU);
+		insertWeightsToNet(DefaultNet, "weights.txt");
 
 		std::vector<std::vector<double>> testSamples = read_csv("test.csv");
 		//std::vector<std::vector<double>> trainSamples = read_csv("train.csv");

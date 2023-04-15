@@ -49,59 +49,84 @@ void NeuralNetGUI::MainForm::MarshalString(String^ s, std::string& os)
 	Marshal::FreeHGlobal(IntPtr((void*)chars));
 }
 
-std::vector<std::vector<double>> NeuralNetGUI::MainForm::TryAllPosition()
+int NeuralNetGUI::MainForm::returnTopBorder(int rows, int columns)
 {
-	std::vector<std::vector<double>> allResults;
-	int rows = tableLayoutPanel_draw->RowCount;
-	int columns = tableLayoutPanel_draw->ColumnCount;
-	std::vector<int> cornersOfImage(4, 0); //top, bottom, left, right
-
+	int corner;
 	for (int i = 0; i < rows; i++)
 	{
 		bool changed = false;
 		for (int j = 0; j < columns; j++)
 			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
-				cornersOfImage[0] = i;
+				corner = i;
 				changed = true;
 				break;
 			}
-			if (changed) break;
-		
+		if (changed) break;
 	}
+	return corner;
+}
+int NeuralNetGUI::MainForm::returnBottomBorder(int rows, int columns)
+{
+	int corner;
 	for (int i = rows - 1; i >= 0; --i)
 	{
 		bool changed = false;
 		for (int j = 0; j < columns; j++)
 			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
-				cornersOfImage[1] = 27 - i;
+				corner = 27 - i;
 				changed = true;
 				break;
 			}
 		if (changed) break;
 	}
-	for(int j = 0; j < columns; j++)
+	return corner;
+}
+int NeuralNetGUI::MainForm::returnLeftBorder(int rows, int columns)
+{
+	int corner;
+	for (int j = 0; j < columns; j++)
 	{
 		bool changed = false;
 		for (int i = 0; i < rows; i++)
 			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
-				cornersOfImage[2] = j;
+				corner = j;
 				changed = true;
 				break;
 			}
 		if (changed) break;
 	}
+	return corner;
+}
+int NeuralNetGUI::MainForm::returnRightBorder(int rows, int columns)
+{
+	int corner;
 	for (int j = columns - 1; j >= 0; --j)
 	{
 		bool changed = false;
 		for (int i = 0; i < rows; i++)
 			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
-				cornersOfImage[3] = 27 - j;
+				corner = 27 - j;
 				changed = true;
 				break;
 			}
 		if (changed) break;
 	}
-		
+	return corner;
+}
+
+
+std::vector<std::vector<double>> NeuralNetGUI::MainForm::TryAllPosition()
+{
+	std::vector<std::vector<double>> allResults;
+
+	int rows = tableLayoutPanel_draw->RowCount;
+	int columns = tableLayoutPanel_draw->ColumnCount;
+	std::vector<int> cornersOfImage(4, 0); //top, bottom, left, right
+
+	cornersOfImage[0] = returnTopBorder(rows, columns);
+	cornersOfImage[1] = returnBottomBorder(rows, columns);
+	cornersOfImage[2] = returnLeftBorder(rows, columns);
+	cornersOfImage[3] = returnRightBorder(rows, columns);
 
 	for (int move_up = 0; move_up < cornersOfImage[0]; move_up++)
 		button_Up_Click(nullptr, nullptr);
@@ -188,8 +213,10 @@ System::Void  NeuralNetGUI::MainForm::labelDrawClick(System::Object^ sender, Sys
  in the probability table.*/
 System::Void  NeuralNetGUI::MainForm::Start_button_Click(System::Object^ sender, System::EventArgs^ e)
 {
-	insertWeightsToNet(DefaultNet);
-	bool TryAll = true;
+	insertWeightsToNet(DefaultNet, "weights.txt");
+
+	//TO-DO Pridat check box na volbu tryall
+	bool TryAll = false;
 	//std::vector<std::vector<double>> testSamples = read_csv("test.csv");
 	//std::vector<std::vector<double>> trainSamples = read_csv("train.csv");
 	//TrainNetwork(DefaultNet, trainSamples);

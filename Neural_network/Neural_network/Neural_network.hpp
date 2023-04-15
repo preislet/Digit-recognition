@@ -13,6 +13,19 @@ class Neuron;
 class NeuralNet;
 using Layer = std::vector<Neuron>;
 
+enum class ActivationFunctions
+{
+    Sigmoid,
+    Tanh,
+    ReLU,
+    LeakyReLU,
+    ParametricReLU,
+    ELU,
+    Swish,
+    GELU,
+    SELU,
+};
+
 struct RMSError {
     double error = 0;
     double recentAverageError = 0;
@@ -31,6 +44,7 @@ class Neuron {
 private:
     int numberOfConnections;
     int index;
+    ActivationFunctions activationFunctionName;
     double eta;
     double alpha;
     static constexpr int BIAS = 1;
@@ -41,11 +55,11 @@ private:
 
     std::vector<Connection> outputWeights;
 
-    static double ActivationFunction(double sumOfPreviousLayer);
-    static double ActivationFunctionDerivative(double Value);
+	double ActivationFunction(double sumOfPreviousLayer);
+    double ActivationFunctionDerivative(double Value);
     double SumDerivationsOfWeightsOfNextLayer(const Layer& nextLayer) const;
 public:
-    Neuron(int numberOfConnections, int index, double eta, double alpha);
+    Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctions activationFunction);
     void SetOutputValue(const double outVal);
     double GetOutputValue() const;
     void FeedForward(const Layer& previousLayer);
@@ -69,7 +83,7 @@ private:
     void UpdateConnectionWeights();
 
 public:
-    NeuralNet(const std::vector<int>& topology, double eta, double alpha);
+    NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction);
     void FeedForward(const std::vector<double>& inputValues);
     void BackPropagation(const std::vector<double>& targetValues);
     void InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights);
@@ -82,7 +96,7 @@ std::vector<std::vector<double>> read_csv(const std::string& path);
 void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
 void TrainNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples);
 double testNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print = false);
-void writeWeightsToFile(const NeuralNet& MyNetwork);
-void insertWeightsToNet(NeuralNet& MyNetwork);
+void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string &path);
+void insertWeightsToNet(NeuralNet& MyNetwork,const std::string& path);
 
 #endif // NEURAL_NET_HPP

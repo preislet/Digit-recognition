@@ -24,12 +24,13 @@ double ::Connection::RandomNumber() { return rand() / double(RAND_MAX);}
 /*Constructor for the Neuron class, which takes as arguments the number of connections to the next layer, the index of the neuron in the current layer,
  and the learning rate (eta) and momentum (alpha) values. It initializes the neuron's output value and gradient to 0, and creates a vector of output weights
  with random initial weights.*/
-::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha)
+::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctions activationFunctionName)
 {
 	this->numberOfConnections = numberOfConnections;
 	this->index = index;
 	this->eta = eta;
 	this->alpha = alpha;
+	this->activationFunctionName = activationFunctionName;
 	inputValue = 0;
 	outputValue = 0;
 	gradient = 0;
@@ -87,12 +88,67 @@ void Neuron::InsertWeights(const std::vector<double> &weight)
 }
 
 //Implements the sigmoid activation function for a neuron.
-double Neuron::ActivationFunction(double sumOfPreviousLayer) { return std::max(sumOfPreviousLayer, 0.0);}
+double Neuron::ActivationFunction(double sumOfPreviousLayer)
+{
+	//TO-DO pridelat funkce
+	switch(activationFunctionName)
+	{
+	case ActivationFunctions::Sigmoid:
+		return 1 / (1 + exp(-sumOfPreviousLayer));
+		break;
+	case ActivationFunctions::Tanh:
+		return tanh(sumOfPreviousLayer);
+		break;
+	case ActivationFunctions::ReLU:
+		return std::max(sumOfPreviousLayer, 0.0);
+		break;
+	case ActivationFunctions::LeakyReLU :
+		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : 0.01 * sumOfPreviousLayer;
+		break;
+	case ActivationFunctions::ParametricReLU :
+		break;
+	case ActivationFunctions::ELU :
+		break;
+	case ActivationFunctions::Swish :
+		break;
+	case ActivationFunctions::GELU :
+		break;
+	case ActivationFunctions::SELU :
+		break;
+	}
+	
+}
 
 //Calculates the derivative of the sigmoid activation function for a neuron.
 double Neuron::ActivationFunctionDerivative(double Value) {
-	if (Value >= 0) return 1;
-	else return 0;
+
+	//TO-DO pridelat derivace funkcí
+	switch(activationFunctionName)
+	{
+	case ActivationFunctions::Sigmoid:
+		return (1 / (1 + exp(-Value))) * (1 - (1 / (1 + exp(-Value))));
+		break;
+	case ActivationFunctions::Tanh:
+		return 1 - (tanh(Value) * tanh(Value));
+		break;
+	case ActivationFunctions::ReLU:
+		return Value >= 0 ? 1 : 0;
+		break;
+	case ActivationFunctions::LeakyReLU :
+		return Value > 0 ? 1 : 0.01;
+		break;
+	case ActivationFunctions::ParametricReLU :
+		break;
+	case ActivationFunctions::ELU :
+		break;
+	case ActivationFunctions::Swish :
+		break;
+	case ActivationFunctions::GELU :
+		break;
+	case ActivationFunctions::SELU :
+		break;
+	}
+	
 }
 
 //Calculates the sum of the derivatives of the weights of the next layer for a neuron.
@@ -119,7 +175,7 @@ std::vector<double> Neuron::GetWeights() const
 
 /*Constructor for the NeuralNet class, which takes as argument a vector of integers specifying the number of neurons in each layer, and the learning rate (eta) and momentum (alpha) values.
  It creates the layers of neurons, initializing the weights of the output connections randomly, and sets the output value of the bias neuron in each layer to 1.0.*/
-NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha)
+NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
 {
 	this->topology = topology;
 
@@ -131,7 +187,7 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha)
 
 		Layer tmpLayer;
 		for (int neuronNum = 0; neuronNum < topology[NumOfLayer]; ++neuronNum)
-			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha));
+			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha, activationFunction));
 
 		layers.emplace_back(tmpLayer);
 	}
@@ -393,9 +449,11 @@ std::vector<std::vector<double>> read_csv(const std::string& path)
 /*his function takes in a NeuralNet object and writes its weights to a text file in a specific format.
  The weights are stored in a 3D vector, where each layer of the network is a matrix of weights between neurons.
  The function iterates through the layers and matrices of weights, writing each weight to a new line in the file.*/
-void writeWeightsToFile(const NeuralNet& MyNetwork)
+void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path = "weights.txt")
 {
-	std::ofstream outputFile("weights.txt");
+	const std::wstring weights_path(path.begin(), path.end());
+
+	std::ofstream outputFile(weights_path.c_str());
 	const auto outputWeightsVector = MyNetwork.GetWeights();
 	if (outputFile.is_open())
 	{
@@ -425,9 +483,11 @@ void writeWeightsToFile(const NeuralNet& MyNetwork)
 /*This function takes in a NeuralNet object and reads in a text file containing weights in the same format as written by writeWeightsToFile.
  It extracts the weights from the file and inserts them into the NeuralNet object, replacing the existing weights. It assumes that the topology of the NeuralNet object matches the topology used to
  write the weights to the file.*/
-void insertWeightsToNet(NeuralNet& MyNetwork)
+void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path = "weights.txt")
 {
-	std::ifstream weightsFile("weights.txt");
+	const std::wstring weights_path(path.begin(), path.end());
+
+	std::ifstream weightsFile(weights_path.c_str());
 	std::string line;
 	std::vector<std::vector<std::vector<double>>> weights;
 	std::vector<int> Net_topology = MyNetwork.GetTopology();

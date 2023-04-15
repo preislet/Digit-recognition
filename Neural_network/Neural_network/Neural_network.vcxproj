@@ -133,11 +133,15 @@
     <ClCompile Include="MainForm.cpp" />
     <ClCompile Include="Neural_network.cpp" />
     <ClCompile Include="Neural_network_main.cpp" />
+    <ClCompile Include="TrainNetworkGUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Image_conversion.hpp" />
     <ClInclude Include="MainForm.h" />
     <ClInclude Include="Neural_network.hpp" />
+    <ClInclude Include="TrainNetworkGUI.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -149,6 +153,11 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Workflow.ComponentModel" />
     <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TrainNetworkGUI.resx">
+      <DependentUpon>TrainNetworkGUI.h</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
