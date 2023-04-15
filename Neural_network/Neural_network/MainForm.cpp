@@ -49,6 +49,84 @@ void NeuralNetGUI::MainForm::MarshalString(String^ s, std::string& os)
 	Marshal::FreeHGlobal(IntPtr((void*)chars));
 }
 
+std::vector<std::vector<double>> NeuralNetGUI::MainForm::TryAllPosition()
+{
+	std::vector<std::vector<double>> allResults;
+	int rows = tableLayoutPanel_draw->RowCount;
+	int columns = tableLayoutPanel_draw->ColumnCount;
+	std::vector<int> cornersOfImage(4, 0); //top, bottom, left, right
+
+	for (int i = 0; i < rows; i++)
+	{
+		bool changed = false;
+		for (int j = 0; j < columns; j++)
+			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
+				cornersOfImage[0] = i;
+				changed = true;
+				break;
+			}
+			if (changed) break;
+		
+	}
+	for (int i = rows - 1; i >= 0; --i)
+	{
+		bool changed = false;
+		for (int j = 0; j < columns; j++)
+			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
+				cornersOfImage[1] = 27 - i;
+				changed = true;
+				break;
+			}
+		if (changed) break;
+	}
+	for(int j = 0; j < columns; j++)
+	{
+		bool changed = false;
+		for (int i = 0; i < rows; i++)
+			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
+				cornersOfImage[2] = j;
+				changed = true;
+				break;
+			}
+		if (changed) break;
+	}
+	for (int j = columns - 1; j >= 0; --j)
+	{
+		bool changed = false;
+		for (int i = 0; i < rows; i++)
+			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
+				cornersOfImage[3] = 27 - j;
+				changed = true;
+				break;
+			}
+		if (changed) break;
+	}
+		
+
+	for (int move_up = 0; move_up < cornersOfImage[0]; move_up++)
+		button_Up_Click(nullptr, nullptr);
+	for (int move_left = 0; move_left < cornersOfImage[2]; move_left++)
+		button_left_Click(nullptr, nullptr);
+
+	for(int move_down = 0; move_down <= cornersOfImage[0] + cornersOfImage[1]; ++move_down)
+	{
+		if (move_down != 0) button_down_Click(nullptr, nullptr);
+		for(int move_right = 0; move_right <= cornersOfImage[2] + cornersOfImage[3]; ++move_right)
+		{
+			if (move_right != 0) button_right_Click(nullptr, nullptr);
+			auto Img_vector = LoadFromDrawing();
+			//PrintNumber(Img_vector);
+
+			DefaultNet.FeedForward(Img_vector);
+			std::vector<double> resultValues = DefaultNet.GetResults();
+			allResults.emplace_back(resultValues);
+		}
+		for (int move_left = 0; move_left < cornersOfImage[2] + cornersOfImage[3]; ++move_left)
+			button_left_Click(nullptr, nullptr);
+	}
+	
+	return allResults;
+}
 // This function iterates over the labels in the drawing canvas and constructs a binary vector representing the image that was drawn by the user.
 std::vector<double>  NeuralNetGUI::MainForm::LoadFromDrawing()
 {
@@ -58,11 +136,11 @@ std::vector<double>  NeuralNetGUI::MainForm::LoadFromDrawing()
 	for (int i = 0; i < rowCount; ++i)
 		for (int j = 0; j < columnCount; ++j)
 		{
-			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::Color::Black) Img_vector.push_back(1.0);
+			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) Img_vector.push_back(1.0);
 			else Img_vector.push_back(0.0);
 		}
 
-	PrintNumber(Img_vector);
+	//PrintNumber(Img_vector);
 	return Img_vector;
 }
 
@@ -110,21 +188,43 @@ System::Void  NeuralNetGUI::MainForm::labelDrawClick(System::Object^ sender, Sys
  in the probability table.*/
 System::Void  NeuralNetGUI::MainForm::Start_button_Click(System::Object^ sender, System::EventArgs^ e)
 {
-	const std::vector<int> topology = { 784,128,64,10 };
-	NeuralNet DefaultNet(topology, 0.033665, 0.0889798);
 	insertWeightsToNet(DefaultNet);
+	bool TryAll = true;
+	//std::vector<std::vector<double>> testSamples = read_csv("test.csv");
+	//std::vector<std::vector<double>> trainSamples = read_csv("train.csv");
+	//TrainNetwork(DefaultNet, trainSamples);
+	//testNetwork(DefaultNet, testSamples);
+	if(TryAll)
+	{
+		std::vector<std::vector<double>> AllResults = TryAllPosition();
+		std::vector<double> resultValues(10, 0.0);
+		for(const std::vector<double> &resultVector:AllResults)
+		{
+			for (int i = 0; i < resultVector.size(); ++i)
+				resultValues[i] += resultVector[i];
+		}
 
-	std::vector<double>Img_vector = LoadFromDrawing();
+		const auto max_elem = std::max_element(resultValues.begin(), resultValues.end());
+		const auto max_index = std::distance(resultValues.begin(), max_elem);
 
-	DefaultNet.FeedForward(Img_vector);
-	std::vector<double> resultValues = DefaultNet.GetResults();
+		label_result->Text = max_index.ToString();
 
-	const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
-	const auto max_element_index = std::distance(resultValues.begin(), max_element);
+		fillOutputTable(resultValues);
+	}
+	else
+	{
+		std::vector<double>Img_vector = LoadFromDrawing();
+		DefaultNet.FeedForward(Img_vector);
+		std::vector<double> resultValues = DefaultNet.GetResults();
 
-	label_result->Text = max_element_index.ToString();
+		const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
+		const auto max_element_index = std::distance(resultValues.begin(), max_element);
 
-	fillOutputTable(resultValues);
+		label_result->Text = max_element_index.ToString();
+
+		fillOutputTable(resultValues);
+	}
+	
 }
 
 // This function is called when the user clicks the "Clear" button. It resets the background color of all the labels in the drawing canvas to white.
@@ -160,7 +260,7 @@ System::Void  NeuralNetGUI::MainForm::UploadButton_Click(System::Object^ sender,
 	int rowCount = tableLayoutPanel_draw->RowCount;
 	for (int i = 0; i < columnCount; ++i)
 		for (int j = 0; j < rowCount; ++j)
-			if (Img_vector[28 * i + j] == 1.00) tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor = System::Drawing::Color::Black;
+			if (Img_vector[28 * i + j] == 1.00) tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor = System::Drawing::SystemColors::Desktop;
 }
 
 // This function handles the click event of the up button. It moves the currently selected item in the list box up by one position.

@@ -330,6 +330,7 @@ void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>
  to count the number of correct predictions. If the print flag is true, it also calls the */
 double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
 {
+	std::vector<std::vector<int>> corrects(10, std::vector<int>(2, 0));
 	double correct_predictions = 0.0;
 	for (auto testSample : testSamples)
 	{
@@ -337,6 +338,7 @@ double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>
 
 		std::vector<double> targetValues(10, 0.0);
 		targetValues[label] = 1.0;
+		corrects[label][0]++;
 		testSample.erase(testSample.begin());
 		MyNetwork.FeedForward(testSample);
 		std::vector<double> resultValues = MyNetwork.GetResults();
@@ -344,7 +346,10 @@ double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>
 		//resultValues.pop_back();
 		const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
 		const auto max_element_index = std::distance(resultValues.begin(), max_element);
-		if (label == max_element_index) correct_predictions += 1.0;
+		if (label == max_element_index) {
+			correct_predictions += 1.0;
+			corrects[label][1]++;
+		}
 
 		if(print) printValues(label, max_element_index, resultValues, testSample, MyNetwork.AverageGetError(), true);
 	}
@@ -410,7 +415,6 @@ void writeWeightsToFile(const NeuralNet& MyNetwork)
 			}
 		}
 		outputFile.close();
-		std::cout << "3D vector written to file successfully!" << std::endl;
 	}
 	else
 	{
@@ -431,7 +435,7 @@ void insertWeightsToNet(NeuralNet& MyNetwork)
 	for(auto topology: Net_topology)
 	{
 		std::vector<std::vector<double>> layer;
-		for (size_t i = 0; i <= topology; ++i)
+		for (size_t i = 0; i < topology; ++i)
 		{
 			std::vector<double> neuron;
 			std::getline(weightsFile, line);
@@ -445,5 +449,5 @@ void insertWeightsToNet(NeuralNet& MyNetwork)
 		weights.emplace_back(layer);
 	}
 	MyNetwork.InsertWeights(weights);
-
+	weightsFile.close();
 }

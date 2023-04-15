@@ -20,6 +20,9 @@ namespace NeuralNetGUI {
 	using namespace System::Drawing;
 	using namespace System::IO;
 
+	const std::vector<int> topology = { 784,128,64,10 };
+	static NeuralNet DefaultNet(topology, 0.033665, 0.0889798);
+
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
 	public: MainForm(void);
@@ -787,7 +790,8 @@ namespace NeuralNetGUI {
 #pragma endregion
 
 	private: bool clicked = false;
-
+	private:std::vector<std::vector<double>>TryAllPosition();
+	private: void fillOutputTable(const std::vector<double>& resultValues);
 	private: void MarshalString(String^ s, std::string& os);
 	private: std::vector<double> LoadFromDrawing();
 	private: System::Void custom_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);

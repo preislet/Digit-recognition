@@ -19,5 +19,5 @@ std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::string& pat
 std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std::vector<RGB>>& imageRGBVector);
 std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std::vector<int>> &INT_vector);
 
-void PrintNumber(const std::vector<int>& Img_vector);
+void PrintNumber(const std::vector<double>& Img_vector);
 #endif //IMAGE_COVERSION

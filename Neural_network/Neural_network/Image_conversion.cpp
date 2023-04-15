@@ -77,6 +77,17 @@ std::vector<std::vector<int>> ConvertToBinVector(const std::vector<std::vector<R
         for (size_t j = 0; j < INT_vector[0].size(); ++j)
             INT_vectorTranspose[j][i] = INT_vector[i][j];
 
+    /*
+    for (int i = 0; i < INT_vectorTranspose.size(); i++)
+    {
+	    for(int j = 0; j < INT_vectorTranspose[0].size(); j++)
+	    {
+            if (INT_vectorTranspose[i][j] ==0) std::cout << " ";
+            else std::cout << "S";
+	    }
+        std::cout << std::endl;
+    }
+    */
 
     return INT_vectorTranspose;
 }
@@ -106,20 +117,19 @@ std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std:
 	const size_t height = INT_vector.size();
 
     const size_t window_width = width / neuralNetworkImageWidth;
-    const size_t window_height = height / neuralNetworkImageWidth;
+    const size_t window_height = height / neuralNetworkImageHeight;
 
 
-    for(size_t windowStart_row = 0; windowStart_row < height - window_height; windowStart_row += window_height)
+    for(size_t windowRow = 0; windowRow < neuralNetworkImageHeight; ++windowRow)
     {
-	    for(size_t windowStart_column = 0; windowStart_column < width - window_width; windowStart_column += window_width)
+	    for(size_t windowColumn = 0; windowColumn < neuralNetworkImageWidth; ++windowColumn)
 	    {
             std::vector <std::vector<int>> windowVector;
-            for(size_t i = windowStart_row; i < windowStart_row+window_height; i++)
+            for(size_t i = windowRow * window_height; i < (windowRow + 1) * window_height; i++)
             {
                 std::vector<int> windowVector_line;
-	            for (size_t j = windowStart_column; j < windowStart_column + window_width; j++)
+	            for (size_t j = windowColumn * window_width; j < (windowColumn + 1) * window_width; j++)
 	            {
-                    
                     windowVector_line.push_back(INT_vector[i][j]);
 	            }
                 windowVector.emplace_back(windowVector_line);
@@ -139,7 +149,7 @@ std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std:
 /*This function takes a vector of integers that represent a compressed binary image of a handwritten digit, and prints it to the console in the form of a 28x28 grid of characters,
  where each character represents a single pixel in the image. The character 'S' is used to represent a black pixel,
  and a space character is used to represent a white pixel.*/
-void PrintNumber(const std::vector<int>& Img_vector)
+void PrintNumber(const std::vector<double>& Img_vector)
 {
     for (int i = 0; i < 28; ++i)
     {
