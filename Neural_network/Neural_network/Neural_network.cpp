@@ -179,6 +179,9 @@ NeuralNet::NeuralNet(){}
  It creates the layers of neurons, initializing the weights of the output connections randomly, and sets the output value of the bias neuron in each layer to 1.0.*/
 NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
 {
+	this->alpha = alpha;
+	this->eta = eta;
+	this->activationFunction = activationFunction;
 	this->topology = topology;
 
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
@@ -196,6 +199,9 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha,
 }
 void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
 {
+	this->alpha = alpha;
+	this->eta = eta;
+	this->activationFunction = activationFunction;
 	this->topology = topology;
 
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
@@ -470,7 +476,8 @@ std::vector<std::vector<double>> read_csv(const std::string& path)
  The function iterates through the layers and matrices of weights, writing each weight to a new line in the file.*/
 void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path = "weights.txt")
 {
-	const std::wstring weights_path(path.begin(), path.end());
+	std::string fullpath = "Networks/" + path;
+	const std::wstring weights_path(fullpath.begin(), fullpath.end());
 
 	std::ofstream outputFile(weights_path.c_str());
 	const auto outputWeightsVector = MyNetwork.GetWeights();
@@ -504,7 +511,8 @@ void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path = "w
  write the weights to the file.*/
 void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path = "weights.txt")
 {
-	const std::wstring weights_path(path.begin(), path.end());
+	std::string fullpath = "Networks/" + path;
+	const std::wstring weights_path(fullpath.begin(), fullpath.end());
 
 	std::ifstream weightsFile(weights_path.c_str());
 	std::string line;

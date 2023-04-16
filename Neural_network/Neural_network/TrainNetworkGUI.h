@@ -18,6 +18,7 @@ namespace TrainGUI {
 	using namespace System::Data;
 	using namespace System::Drawing;
 
+	void MarshalString(String^ s, std::string& os);
 
 	static NeuralNet CustomNet;
 	public ref class TrainNetworkGUI : public System::Windows::Forms::Form
@@ -30,7 +31,7 @@ namespace TrainGUI {
 
 	protected:
 		/// <summary>
-		/// Uvolnìte všechny používané prostøedky.
+		/// Uvoln?te všechny používané prost?edky.
 		/// </summary>
 		~TrainNetworkGUI()
 		{
@@ -71,13 +72,13 @@ namespace TrainGUI {
 
 	private:
 		/// <summary>
-		/// Vyžaduje se promìnná návrháøe.
+		/// Vyžaduje se prom?nná návrhá?e.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+		System::ComponentModel::Container^ components;
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
-		/// Metoda vyžadovaná pro podporu Návrháøe - neupravovat
+		/// Metoda vyžadovaná pro podporu Návrhá?e - neupravovat
 		/// obsah této metody v editoru kódu.
 		/// </summary>
 		void InitializeComponent(void)
@@ -192,6 +193,7 @@ namespace TrainGUI {
 			this->textBox_topology->Name = L"textBox_topology";
 			this->textBox_topology->Size = System::Drawing::Size(160, 26);
 			this->textBox_topology->TabIndex = 6;
+			this->textBox_topology->TextChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::textBox_topology_TextChanged);
 			// 
 			// textBox_alpha
 			// 
@@ -201,6 +203,7 @@ namespace TrainGUI {
 			this->textBox_alpha->Name = L"textBox_alpha";
 			this->textBox_alpha->Size = System::Drawing::Size(160, 26);
 			this->textBox_alpha->TabIndex = 7;
+			this->textBox_alpha->TextChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::textBox_alpha_TextChanged);
 			// 
 			// textBox_eta
 			// 
@@ -210,6 +213,7 @@ namespace TrainGUI {
 			this->textBox_eta->Name = L"textBox_eta";
 			this->textBox_eta->Size = System::Drawing::Size(160, 26);
 			this->textBox_eta->TabIndex = 8;
+			this->textBox_eta->TextChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::textBox_eta_TextChanged);
 			// 
 			// tableLayoutPanel_activationFunction
 			// 
@@ -283,7 +287,7 @@ namespace TrainGUI {
 			this->checkBox_SELU->Tag = L"8";
 			this->checkBox_SELU->Text = L"SELU";
 			this->checkBox_SELU->UseVisualStyleBackColor = true;
-			this->checkBox_SELU->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_SELU->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// label_act
 			// 
@@ -311,7 +315,7 @@ namespace TrainGUI {
 			this->checkBox_Sigmoid->Tag = L"0";
 			this->checkBox_Sigmoid->Text = L"Sigmoid";
 			this->checkBox_Sigmoid->UseVisualStyleBackColor = true;
-			this->checkBox_Sigmoid->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_Sigmoid->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_Tanh
 			// 
@@ -325,7 +329,7 @@ namespace TrainGUI {
 			this->checkBox_Tanh->Tag = L"1";
 			this->checkBox_Tanh->Text = L"Tanh";
 			this->checkBox_Tanh->UseVisualStyleBackColor = true;
-			this->checkBox_Tanh->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_Tanh->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_ReLU
 			// 
@@ -339,7 +343,7 @@ namespace TrainGUI {
 			this->checkBox_ReLU->Tag = L"2";
 			this->checkBox_ReLU->Text = L"ReLU";
 			this->checkBox_ReLU->UseVisualStyleBackColor = true;
-			this->checkBox_ReLU->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_ReLU->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_LeakyReLU
 			// 
@@ -353,7 +357,7 @@ namespace TrainGUI {
 			this->checkBox_LeakyReLU->Tag = L"3";
 			this->checkBox_LeakyReLU->Text = L"LeakyReLU";
 			this->checkBox_LeakyReLU->UseVisualStyleBackColor = true;
-			this->checkBox_LeakyReLU->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_LeakyReLU->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_ParametricReLU
 			// 
@@ -367,7 +371,7 @@ namespace TrainGUI {
 			this->checkBox_ParametricReLU->Tag = L"4";
 			this->checkBox_ParametricReLU->Text = L"ParametricReLU";
 			this->checkBox_ParametricReLU->UseVisualStyleBackColor = true;
-			this->checkBox_ParametricReLU->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_ParametricReLU->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_ELU
 			// 
@@ -381,7 +385,7 @@ namespace TrainGUI {
 			this->checkBox_ELU->Tag = L"5";
 			this->checkBox_ELU->Text = L"ELU";
 			this->checkBox_ELU->UseVisualStyleBackColor = true;
-			this->checkBox_ELU->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_ELU->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_Swish
 			// 
@@ -395,7 +399,7 @@ namespace TrainGUI {
 			this->checkBox_Swish->Tag = L"6";
 			this->checkBox_Swish->Text = L"Swish";
 			this->checkBox_Swish->UseVisualStyleBackColor = true;
-			this->checkBox_Swish->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_Swish->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// checkBox_GELU
 			// 
@@ -409,7 +413,7 @@ namespace TrainGUI {
 			this->checkBox_GELU->Tag = L"7";
 			this->checkBox_GELU->Text = L"GELU";
 			this->checkBox_GELU->UseVisualStyleBackColor = true;
-			this->checkBox_GELU->CheckedChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
+			this->checkBox_GELU->Click += gcnew System::EventHandler(this, &TrainNetworkGUI::check_ActivationFunction_Click);
 			// 
 			// label_activationFunction
 			// 
@@ -496,6 +500,7 @@ namespace TrainGUI {
 			this->textBox_Name->Name = L"textBox_Name";
 			this->textBox_Name->Size = System::Drawing::Size(160, 26);
 			this->textBox_Name->TabIndex = 17;
+			this->textBox_Name->TextChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::textBox_Name_TextChanged);
 			// 
 			// TrainNetworkGUI
 			// 
@@ -538,10 +543,13 @@ namespace TrainGUI {
 		int activationFunctionNum = 0;
 
 
-	private: void MarshalString(String^ s, std::string& os);
 	private: System::Void button_Train_Click(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void button_SaveNetwork_Click(System::Object^ sender, System::EventArgs^ e);
 	private: System::Void check_ActivationFunction_Click(System::Object^ sender, System::EventArgs^ e);
-
+	private: void writeNeuralNetInfoToFile(const NeuralNet& CustomNet, const std::string& name);
+	private: System::Void textBox_eta_TextChanged(System::Object^ sender, System::EventArgs^ e);
+	private: System::Void textBox_topology_TextChanged(System::Object^ sender, System::EventArgs^ e);
+	private: System::Void textBox_alpha_TextChanged(System::Object^ sender, System::EventArgs^ e);
+	private: System::Void textBox_Name_TextChanged(System::Object^ sender, System::EventArgs^ e);
 };
 }

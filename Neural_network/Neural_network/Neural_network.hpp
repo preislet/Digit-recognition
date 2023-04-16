@@ -71,6 +71,10 @@ public:
 };
 
 class NeuralNet {
+public:
+    double alpha;
+    double eta;
+    ActivationFunctions activationFunction;
 private:
     std::vector<int> topology;
     std::vector<Layer> layers;

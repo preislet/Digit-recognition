@@ -7,6 +7,7 @@
 #include "Neural_network.hpp"
 
 #include "MainForm.h"
+#include "TrainNetworkGUI.h"
 #using <System.dll>
 #using <System.Drawing.dll>
 
@@ -264,7 +265,7 @@ System::Void  NeuralNetGUI::MainForm::UploadButton_Click(System::Object^ sender,
 	if (openFileDialog1->ShowDialog() == System::Windows::Forms::DialogResult::OK)
 	{
 		System::String^ sFileName = openFileDialog1->FileName;
-		MarshalString(sFileName, fileName);
+		TrainGUI::MarshalString(sFileName, fileName);
 	}
 
 	if (fileName == "") return;
@@ -359,5 +360,6 @@ System::Void  NeuralNetGUI::MainForm::button_right_Click(System::Object^ sender,
 }
 System::Void  NeuralNetGUI::MainForm::button_trainNeuralNet_Click(System::Object^ sender, System::EventArgs^ e)
 {
-	return;
+	TrainGUI::TrainNetworkGUI^ trainForm = gcnew TrainGUI::TrainNetworkGUI;
+	trainForm->Show();
 }
