@@ -65,7 +65,10 @@ namespace NeuralNetGUI {
 	private: System::Windows::Forms::Button^ button_left;
 	private: System::Windows::Forms::Button^ button2;
 	private: System::Windows::Forms::Label^ label_NameOfCustomNeuralNet;
-		   System::ComponentModel::Container^ components;
+    private: System::Windows::Forms::CheckBox^ checkBox_allPositions;
+    private: System::Windows::Forms::CheckBox^ checkBox_sumScores;
+    private: System::Windows::Forms::CheckBox^ checkBox_highestScore;
+           System::ComponentModel::Container^ components;
 
 
 #pragma region Windows Form Designer generated code
@@ -112,6 +115,9 @@ namespace NeuralNetGUI {
                this->button_left = (gcnew System::Windows::Forms::Button());
                this->button2 = (gcnew System::Windows::Forms::Button());
                this->label_NameOfCustomNeuralNet = (gcnew System::Windows::Forms::Label());
+               this->checkBox_allPositions = (gcnew System::Windows::Forms::CheckBox());
+               this->checkBox_sumScores = (gcnew System::Windows::Forms::CheckBox());
+               this->checkBox_highestScore = (gcnew System::Windows::Forms::CheckBox());
                this->tableLayoutPanel_Propability->SuspendLayout();
                this->SuspendLayout();
                // 
@@ -228,7 +234,7 @@ namespace NeuralNetGUI {
                this->tableLayoutPanel_draw->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute,
                    28)));
                this->tableLayoutPanel_draw->ColumnStyles->Add((gcnew System::Windows::Forms::ColumnStyle(System::Windows::Forms::SizeType::Absolute,
-                   36)));
+                   40)));
                this->tableLayoutPanel_draw->Cursor = System::Windows::Forms::Cursors::Default;
                this->tableLayoutPanel_draw->Location = System::Drawing::Point(39, 94);
                this->tableLayoutPanel_draw->Margin = System::Windows::Forms::Padding(0);
@@ -759,11 +765,57 @@ namespace NeuralNetGUI {
                this->label_NameOfCustomNeuralNet->Text = L"Name of custom neural Net: ";
                this->label_NameOfCustomNeuralNet->Visible = false;
                // 
+               // checkBox_allPositions
+               // 
+               this->checkBox_allPositions->AutoSize = true;
+               this->checkBox_allPositions->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular,
+                   System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(238)));
+               this->checkBox_allPositions->Location = System::Drawing::Point(1175, 659);
+               this->checkBox_allPositions->Name = L"checkBox_allPositions";
+               this->checkBox_allPositions->Size = System::Drawing::Size(200, 24);
+               this->checkBox_allPositions->TabIndex = 30;
+               this->checkBox_allPositions->Text = L"Try all positions of image";
+               this->checkBox_allPositions->UseVisualStyleBackColor = true;
+               this->checkBox_allPositions->CheckedChanged += gcnew System::EventHandler(this, &MainForm::checkBox_allPositions_CheckedChanged);
+               // 
+               // checkBox_sumScores
+               // 
+               this->checkBox_sumScores->AutoSize = true;
+               this->checkBox_sumScores->Checked = true;
+               this->checkBox_sumScores->CheckState = System::Windows::Forms::CheckState::Checked;
+               this->checkBox_sumScores->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular,
+                   System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(238)));
+               this->checkBox_sumScores->Location = System::Drawing::Point(1202, 689);
+               this->checkBox_sumScores->Name = L"checkBox_sumScores";
+               this->checkBox_sumScores->Size = System::Drawing::Size(185, 20);
+               this->checkBox_sumScores->TabIndex = 31;
+               this->checkBox_sumScores->Text = L"Sum all scores of positions";
+               this->checkBox_sumScores->UseVisualStyleBackColor = true;
+               this->checkBox_sumScores->Visible = false;
+               this->checkBox_sumScores->CheckedChanged += gcnew System::EventHandler(this, &MainForm::checkBox_sumScores_CheckedChanged);
+               // 
+               // checkBox_highestScore
+               // 
+               this->checkBox_highestScore->AutoSize = true;
+               this->checkBox_highestScore->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Regular,
+                   System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(238)));
+               this->checkBox_highestScore->Location = System::Drawing::Point(1202, 715);
+               this->checkBox_highestScore->Name = L"checkBox_highestScore";
+               this->checkBox_highestScore->Size = System::Drawing::Size(187, 20);
+               this->checkBox_highestScore->TabIndex = 32;
+               this->checkBox_highestScore->Text = L"Choose highest score of all";
+               this->checkBox_highestScore->UseVisualStyleBackColor = true;
+               this->checkBox_highestScore->Visible = false;
+               this->checkBox_highestScore->CheckedChanged += gcnew System::EventHandler(this, &MainForm::checkBox_highestScore_CheckedChanged);
+               // 
                // MainForm
                // 
                this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
                this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
                this->ClientSize = System::Drawing::Size(1443, 970);
+               this->Controls->Add(this->checkBox_highestScore);
+               this->Controls->Add(this->checkBox_sumScores);
+               this->Controls->Add(this->checkBox_allPositions);
                this->Controls->Add(this->label_NameOfCustomNeuralNet);
                this->Controls->Add(this->button2);
                this->Controls->Add(this->button_left);
@@ -791,13 +843,16 @@ namespace NeuralNetGUI {
 #pragma endregion
 
 	private:
-		std::vector<std::vector<double>>TryAllPosition();
+		std::vector<std::vector<double>>TryAllPosition(NeuralNet& Network);
 		void fillOutputTable(const std::vector<double>& resultValues);
 		int returnTopBorder(int rows, int columns);
 		int returnBottomBorder(int rows, int columns);
 		int returnLeftBorder(int rows, int columns);
 		int returnRightBorder(int rows, int columns);
 
+        void SumScoresPrediction(const std::vector<std::vector<double>>& AllResults);
+		void HighestScorePrediction(const std::vector<std::vector<double>>& AllResults);
+        void BasicPrediction(NeuralNet& Network);
 		void PredictNumber(NeuralNet& Network);
 		std::vector<double> LoadFromDrawing();
 		System::Void custom_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
@@ -811,6 +866,8 @@ namespace NeuralNetGUI {
 		System::Void button_down_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void button_right_Click(System::Object^ sender, System::EventArgs^ e);
 		System::Void button_trainNeuralNet_Click(System::Object^ sender, System::EventArgs^ e);
-
-	};
+		System::Void checkBox_allPositions_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkBox_sumScores_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+        System::Void checkBox_highestScore_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
+};
 }

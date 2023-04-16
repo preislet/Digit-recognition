@@ -1,4 +1,6 @@
 ﻿#include<iostream>
+#include<stdlib.h>
+#include<crtdbg.h>
 
 using namespace System;
 
@@ -30,7 +32,9 @@ int main(){
 		Application::SetCompatibleTextRenderingDefault(false);
 		Application::Run(gcnew NeuralNetGUI::MainForm());
 	}
-	
+
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+	_CrtDumpMemoryLeaks();
 	return 0;
 	
 }

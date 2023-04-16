@@ -106,48 +106,69 @@ int NeuralNetGUI::MainForm::returnRightBorder(int rows, int columns)
 	}
 	return corner;
 }
-
-void  NeuralNetGUI::MainForm::PredictNumber(NeuralNet& Network)
+void NeuralNetGUI::MainForm::SumScoresPrediction(const std::vector<std::vector<double>>& AllResults)
 {
-	//TO-DO Pridat check box na volbu tryall
-	bool TryAll = false;
-	//std::vector<std::vector<double>> testSamples = read_csv("test.csv");
-	//std::vector<std::vector<double>> trainSamples = read_csv("train.csv");
-	//TrainNetwork(DefaultNet, trainSamples);
-	//testNetwork(DefaultNet, testSamples);
-	if (TryAll)
+	std::vector<double> resultValues(10, 0.0);
+	for (const std::vector<double>& resultVector : AllResults)
 	{
-		std::vector<std::vector<double>> AllResults = TryAllPosition();
-		std::vector<double> resultValues(10, 0.0);
-		for (const std::vector<double>& resultVector : AllResults)
-		{
-			for (int i = 0; i < resultVector.size(); ++i)
-				resultValues[i] += resultVector[i];
-		}
-
-		const auto max_elem = std::max_element(resultValues.begin(), resultValues.end());
-		const auto max_index = std::distance(resultValues.begin(), max_elem);
-
-		label_result->Text = max_index.ToString();
-
-		fillOutputTable(resultValues);
+		for (int i = 0; i < resultVector.size(); ++i)
+			resultValues[i] += resultVector[i];
 	}
-	else
+
+	const auto max_elem = std::max_element(resultValues.begin(), resultValues.end());
+	const auto max_index = std::distance(resultValues.begin(), max_elem);
+
+	label_result->Text = max_index.ToString();
+
+	fillOutputTable(resultValues);
+}
+void NeuralNetGUI::MainForm::HighestScorePrediction(const std::vector<std::vector<double>>& AllResults)
+{
+	double max_element = 0;
+	int max_index = 0;
+	for (const std::vector<double>& resultVector : AllResults)
 	{
-		std::vector<double>Img_vector = LoadFromDrawing();
-		DefaultNet.FeedForward(Img_vector);
-		std::vector<double> resultValues = DefaultNet.GetResults();
+		const auto curr_max_element = std::max_element(resultVector.begin(), resultVector.end());
+		const auto curr_max_element_index = std::distance(resultVector.begin(), curr_max_element);
 
-		const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
-		const auto max_element_index = std::distance(resultValues.begin(), max_element);
-
-		label_result->Text = max_element_index.ToString();
-
-		fillOutputTable(resultValues);
+		if (max_element < resultVector[curr_max_element_index])
+		{
+			max_element = resultVector[curr_max_element_index];
+			max_index = curr_max_element_index;
+			label_result->Text = max_index.ToString();
+			fillOutputTable(resultVector);
+		}
 	}
 }
+void NeuralNetGUI::MainForm::BasicPrediction(NeuralNet& Network)
+{
+	std::vector<double>Img_vector = LoadFromDrawing();
+	Network.FeedForward(Img_vector);
+	std::vector<double> resultValues = Network.GetResults();
 
-std::vector<std::vector<double>> NeuralNetGUI::MainForm::TryAllPosition()
+	const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
+	const auto max_element_index = std::distance(resultValues.begin(), max_element);
+
+	label_result->Text = max_element_index.ToString();
+
+	fillOutputTable(resultValues);
+}
+void  NeuralNetGUI::MainForm::PredictNumber(NeuralNet& Network)
+{
+
+	if (checkBox_allPositions->Checked == true)
+	{
+		std::vector<std::vector<double>> AllResults = TryAllPosition(Network);
+
+		if (checkBox_sumScores->Checked == true) SumScoresPrediction(AllResults);
+		else HighestScorePrediction(AllResults);
+
+	}
+	else BasicPrediction(Network);
+	
+}
+
+std::vector<std::vector<double>> NeuralNetGUI::MainForm::TryAllPosition(NeuralNet& Network)
 {
 	std::vector<std::vector<double>> allResults;
 
@@ -174,8 +195,8 @@ std::vector<std::vector<double>> NeuralNetGUI::MainForm::TryAllPosition()
 			auto Img_vector = LoadFromDrawing();
 			//PrintNumber(Img_vector);
 
-			DefaultNet.FeedForward(Img_vector);
-			std::vector<double> resultValues = DefaultNet.GetResults();
+			Network.FeedForward(Img_vector);
+			std::vector<double> resultValues = Network.GetResults();
 			allResults.emplace_back(resultValues);
 		}
 		for (int move_left = 0; move_left < cornersOfImage[2] + cornersOfImage[3]; ++move_left)
@@ -266,6 +287,9 @@ System::Void  NeuralNetGUI::MainForm::custom_nn_CheckedChanged(System::Object^ s
 		topology.emplace_back(std::stoi(tmp));
 
 	CustomNet.NeuralNetUpdate(topology, eta, alpha, actFun);
+
+	std::string weights_filename = fileName.erase(fileName.length() - 9) + ".txt";
+	insertWeightsToNet(CustomNet, weights_filename);
 
 	std::string base_filename = fileName.substr(fileName.find_last_of("/\\") + 1);
 	base_filename = base_filename.erase(base_filename.length() - 9);
@@ -403,4 +427,29 @@ System::Void  NeuralNetGUI::MainForm::button_trainNeuralNet_Click(System::Object
 {
 	TrainGUI::TrainNetworkGUI^ trainForm = gcnew TrainGUI::TrainNetworkGUI;
 	trainForm->Show();
+}
+
+System::Void  NeuralNetGUI::MainForm::checkBox_allPositions_CheckedChanged(System::Object^ sender, System::EventArgs^ e)
+{
+	CheckBox^ checkBox = safe_cast<CheckBox^>(sender);
+	if(checkBox->Checked == true)
+	{
+		checkBox_highestScore->Visible = true;
+		checkBox_sumScores->Visible = true;
+	}
+	else
+	{
+		checkBox_highestScore->Visible = false;
+		checkBox_sumScores->Visible = false;
+	}
+}
+System::Void NeuralNetGUI::MainForm::checkBox_sumScores_CheckedChanged(System::Object^ sender, System::EventArgs^ e)
+{
+	if (checkBox_sumScores->Checked == true) checkBox_highestScore->Checked = false;
+	else checkBox_highestScore->Checked = true;
+}
+System::Void NeuralNetGUI::MainForm::checkBox_highestScore_CheckedChanged(System::Object^ sender, System::EventArgs^ e)
+{
+	if (checkBox_highestScore->Checked == true) checkBox_sumScores->Checked = false;
+	else checkBox_sumScores->Checked = true;
 }
