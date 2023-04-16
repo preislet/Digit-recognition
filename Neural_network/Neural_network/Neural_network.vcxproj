@@ -130,14 +130,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Image_conversion.cpp" />
-    <ClCompile Include="MainForm.cpp" />
+    <ClCompile Include="NeuralNetMainGUI.cpp" />
     <ClCompile Include="Neural_network.cpp" />
     <ClCompile Include="Neural_network_main.cpp" />
     <ClCompile Include="TrainNetworkGUI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Image_conversion.hpp" />
-    <ClInclude Include="MainForm.h" />
+    <ClInclude Include="NeuralNetMainGUI.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
     <ClInclude Include="Neural_network.hpp" />
     <ClInclude Include="TrainNetworkGUI.h">
       <FileType>CppForm</FileType>
@@ -155,6 +157,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="NeuralNetMainGUI.resx">
+      <DependentUpon>NeuralNetMainGUI.h</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TrainNetworkGUI.resx">
       <DependentUpon>TrainNetworkGUI.h</DependentUpon>
     </EmbeddedResource>

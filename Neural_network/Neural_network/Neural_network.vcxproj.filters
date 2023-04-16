@@ -24,10 +24,10 @@
     <ClCompile Include="Image_conversion.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="MainForm.cpp">
+    <ClCompile Include="TrainNetworkGUI.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
-    <ClCompile Include="TrainNetworkGUI.cpp">
+    <ClCompile Include="NeuralNetMainGUI.cpp">
       <Filter>Zdrojové soubory</Filter>
     </ClCompile>
   </ItemGroup>
@@ -38,10 +38,10 @@
     <ClInclude Include="Image_conversion.hpp">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
-    <ClInclude Include="MainForm.h">
+    <ClInclude Include="TrainNetworkGUI.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
-    <ClInclude Include="TrainNetworkGUI.h">
+    <ClInclude Include="NeuralNetMainGUI.h">
       <Filter>Hlavičkové soubory</Filter>
     </ClInclude>
   </ItemGroup>

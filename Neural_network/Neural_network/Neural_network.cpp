@@ -204,6 +204,11 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 	this->activationFunction = activationFunction;
 	this->topology = topology;
 
+	layers.clear();
+	RMS_error.error = 0;
+	RMS_error.recentAverageError = 0;
+	RMS_error.recentAverageSmoothingFactor = 100;
+
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
 	{
 		int numOfOutputs;

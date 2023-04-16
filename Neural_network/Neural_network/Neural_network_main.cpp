@@ -4,7 +4,7 @@ using namespace System;
 
 using namespace System::Windows::Forms;
 
-#include "MainForm.h"
+#include "NeuralNetMainGUI.h"
 [STAThread]
 int main(){
 
