@@ -54,12 +54,20 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 		while (getline(ss, tmp, ';'))
 			topology.emplace_back(std::stoi(tmp));
 	}
+<<<<<<< HEAD
 	catch (...)
+=======
+	catch(...)
+>>>>>>> 16ac65e9a82f4a67ae0bf7c904532368d31f40dd
 	{
 		topologyInserted = false;
 		textBox_topology->Text = "";
 	}
+<<<<<<< HEAD
 	if (topology[0] != 784 && topology.back() != 10)
+=======
+	if(topology[0] != 784 && topology.back() != 10)
+>>>>>>> 16ac65e9a82f4a67ae0bf7c904532368d31f40dd
 	{
 		topologyInserted = false;
 		textBox_topology->Text = "";
@@ -71,7 +79,11 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 	std::string sEta;
 	MarshalString(textBox_alpha->Text, sAlpha);
 	MarshalString(textBox_eta->Text, sEta);
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 16ac65e9a82f4a67ae0bf7c904532368d31f40dd
 	ActivationFunctions activationFunction = static_cast<ActivationFunctions>(activationFunctionNum);
 	double Alpha = std::stod(sAlpha);
 	double Eta = std::stod(sEta);
@@ -126,11 +138,19 @@ System::Void TrainGUI::TrainNetworkGUI::textBox_alpha_TextChanged(System::Object
 	try
 	{
 		alpha = std::stod(sAlpha);
+<<<<<<< HEAD
 		alphaInserted = true;
 	}
 	catch (...)
 	{
 		alphaInserted = false;
+=======
+		etaInserted = true;
+	}
+	catch (...)
+	{
+		etaInserted = false;
+>>>>>>> 16ac65e9a82f4a67ae0bf7c904532368d31f40dd
 		textBox_alpha->Text = "";
 	}
 }
@@ -153,4 +173,9 @@ System::Void TrainGUI::TrainNetworkGUI::textBox_eta_TextChanged(System::Object^ 
 		etaInserted = false;
 		textBox_eta->Text = "";
 	}
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> 16ac65e9a82f4a67ae0bf7c904532368d31f40dd
