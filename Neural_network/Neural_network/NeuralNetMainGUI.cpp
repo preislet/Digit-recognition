@@ -287,13 +287,14 @@ System::Void  NeuralNetGUI::MainForm::custom_nn_CheckedChanged(System::Object^ s
 		topology.emplace_back(std::stoi(tmp));
 
 	CustomNet.NeuralNetUpdate(topology, eta, alpha, actFun);
-
+	std::cout << CustomNet.eta << std::endl;
+	std::cout << CustomNet.alpha << std::endl;
+	
 	std::string weights_filename = fileName.erase(fileName.length() - 9) + ".txt";
-	insertWeightsToNet(CustomNet, weights_filename);
 
 	std::string base_filename = fileName.substr(fileName.find_last_of("/\\") + 1);
-	base_filename = base_filename.erase(base_filename.length() - 9);
 	String^ sysstr = gcnew String(base_filename.data());
+	insertWeightsToNet(CustomNet, base_filename + ".txt");
 	label_NameOfCustomNeuralNet->Text = "Name of custom neural Net: " + sysstr;
 }
 

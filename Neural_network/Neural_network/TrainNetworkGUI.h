@@ -69,6 +69,7 @@ namespace TrainGUI {
 	private: System::Windows::Forms::Label^ label6;
 	private: System::Windows::Forms::Label^ label_Name;
 	private: System::Windows::Forms::TextBox^ textBox_Name;
+	private: System::Windows::Forms::Label^ label_progress;
 
 	private:
 		/// <summary>
@@ -111,6 +112,7 @@ namespace TrainGUI {
 			this->label6 = (gcnew System::Windows::Forms::Label());
 			this->label_Name = (gcnew System::Windows::Forms::Label());
 			this->textBox_Name = (gcnew System::Windows::Forms::TextBox());
+			this->label_progress = (gcnew System::Windows::Forms::Label());
 			this->tableLayoutPanel_activationFunction->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -132,7 +134,7 @@ namespace TrainGUI {
 			this->button_SaveNetwork->Enabled = false;
 			this->button_SaveNetwork->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 36, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(238)));
-			this->button_SaveNetwork->Location = System::Drawing::Point(324, 541);
+			this->button_SaveNetwork->Location = System::Drawing::Point(280, 541);
 			this->button_SaveNetwork->Name = L"button_SaveNetwork";
 			this->button_SaveNetwork->Size = System::Drawing::Size(336, 91);
 			this->button_SaveNetwork->TabIndex = 1;
@@ -146,7 +148,7 @@ namespace TrainGUI {
 			this->label_accuracy->AutoSize = true;
 			this->label_accuracy->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 36, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
 				static_cast<System::Byte>(238)));
-			this->label_accuracy->Location = System::Drawing::Point(330, 483);
+			this->label_accuracy->Location = System::Drawing::Point(270, 483);
 			this->label_accuracy->Name = L"label_accuracy";
 			this->label_accuracy->Size = System::Drawing::Size(315, 55);
 			this->label_accuracy->TabIndex = 2;
@@ -422,9 +424,9 @@ namespace TrainGUI {
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(238)));
 			this->label_activationFunction->Location = System::Drawing::Point(12, 162);
 			this->label_activationFunction->Name = L"label_activationFunction";
-			this->label_activationFunction->Size = System::Drawing::Size(252, 20);
+			this->label_activationFunction->Size = System::Drawing::Size(204, 20);
 			this->label_activationFunction->TabIndex = 10;
-			this->label_activationFunction->Text = L"Activation function: ---------------------";
+			this->label_activationFunction->Text = L"Activation function: Sigmoid";
 			// 
 			// label2
 			// 
@@ -502,11 +504,24 @@ namespace TrainGUI {
 			this->textBox_Name->TabIndex = 17;
 			this->textBox_Name->TextChanged += gcnew System::EventHandler(this, &TrainNetworkGUI::textBox_Name_TextChanged);
 			// 
+			// label_progress
+			// 
+			this->label_progress->AutoSize = true;
+			this->label_progress->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 20.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(238)));
+			this->label_progress->Location = System::Drawing::Point(36, 343);
+			this->label_progress->Name = L"label_progress";
+			this->label_progress->Size = System::Drawing::Size(213, 31);
+			this->label_progress->TabIndex = 18;
+			this->label_progress->Text = L"Training finished";
+			this->label_progress->Visible = false;
+			// 
 			// TrainNetworkGUI
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(681, 644);
+			this->Controls->Add(this->label_progress);
 			this->Controls->Add(this->textBox_Name);
 			this->Controls->Add(this->label_Name);
 			this->Controls->Add(this->label6);

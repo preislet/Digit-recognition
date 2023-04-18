@@ -44,8 +44,12 @@ void TrainGUI::TrainNetworkGUI::writeNeuralNetInfoToFile(const NeuralNet& Custom
 System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sender, System::EventArgs^ e)
 {
 	std::vector<int> topology;
+	if (textBox_topology->Text == "")
+	{
+		textBox_topology->Text = "784;128;64;10";
+		return;
+	}
 	std::string sTopology;
-
 	MarshalString(textBox_topology->Text, sTopology);
 	try
 	{
@@ -65,6 +69,15 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 		textBox_topology->Text = "";
 	}
 
+	if (textBox_alpha->Text == "") {
+		textBox_alpha->Text = "0.0889798";
+		return;
+	}
+	if (textBox_eta->Text == "") {
+		textBox_eta->Text = "0.033665";
+		return;
+	}
+	
 	if (!(topologyInserted && alphaInserted && etaInserted && nameInserted && activationFunctionInserted)) return;
 
 	std::string sAlpha;
@@ -75,6 +88,16 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 	ActivationFunctions activationFunction = static_cast<ActivationFunctions>(activationFunctionNum);
 	double Alpha = std::stod(sAlpha);
 	double Eta = std::stod(sEta);
+	if (Eta <= 0) {
+		textBox_eta->Text = "0.033665";
+		return;
+	}
+	if (Alpha <= 0) {
+		textBox_alpha->Text = "0.0889798";
+		return;
+	}
+	String^ s = "Press the OK to start training the neural network. The training can last even a few minutes. Do not turn off the program. When the training is done, it will show the option to save the neural network ";
+	MessageBox::Show(s);
 
 	CustomNet.NeuralNetUpdate(topology, Eta, Alpha, activationFunction);
 
@@ -84,9 +107,9 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 	double accuracy = testNetwork(CustomNet, testSamples);
 
 	label_accuracy->Text = "Accuracy: " + (accuracy * 100).ToString() + "%";
-	button_Train->Enabled = false;
 	button_SaveNetwork->Visible = true;
 	button_SaveNetwork->Enabled = true;
+	label_progress->Visible = true;
 }
 System::Void TrainGUI::TrainNetworkGUI::button_SaveNetwork_Click(System::Object^ sender, System::EventArgs^ e)
 {

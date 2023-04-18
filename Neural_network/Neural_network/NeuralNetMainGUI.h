@@ -21,8 +21,9 @@ namespace NeuralNetGUI {
 	using namespace System::IO;
 
 	const std::vector<int> topology = { 784,128,64,10 };
+    const std::vector<int> customtopology = { 0 };
 	static NeuralNet DefaultNet(topology, 0.033665, 0.0889798, ActivationFunctions::ReLU);
-	static NeuralNet CustomNet;
+	static NeuralNet CustomNet(customtopology, 0, 0,ActivationFunctions::ReLU);
 
 	public ref class MainForm : public System::Windows::Forms::Form
 	{
