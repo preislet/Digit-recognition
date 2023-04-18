@@ -13,6 +13,9 @@ class Neuron;
 class NeuralNet;
 using Layer = std::vector<Neuron>;
 
+constexpr static unsigned int PARAMETER_FOR_ParametricReLU = 0.8;
+constexpr static unsigned int PARAMETER_FOR_ELU = 1;
+
 enum class ActivationFunctions
 {
     Sigmoid,

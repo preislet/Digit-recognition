@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include<iostream>
 #include<vector>
 #include<algorithm>
@@ -5,8 +6,10 @@
 #include<cassert>
 #include<fstream>
 #include<sstream>
+#include<cmath>
 
 #include "Neural_network.hpp"
+
 class Neuron;
 class NeuralNet;
 using Layer = std::vector<Neuron>;
@@ -106,14 +109,19 @@ double Neuron::ActivationFunction(double sumOfPreviousLayer)
 		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : 0.01 * sumOfPreviousLayer;
 		break;
 	case ActivationFunctions::ParametricReLU :
+		return std::max(PARAMETER_FOR_ParametricReLU * sumOfPreviousLayer, 0.0);
 		break;
 	case ActivationFunctions::ELU :
+		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : PARAMETER_FOR_ELU * (exp(sumOfPreviousLayer) - 1);
 		break;
 	case ActivationFunctions::Swish :
+		return sumOfPreviousLayer / (1 + exp(-sumOfPreviousLayer));
 		break;
 	case ActivationFunctions::GELU :
+		return 0.5 * sumOfPreviousLayer * (1 + erf(sumOfPreviousLayer / sqrt(2)));
 		break;
 	case ActivationFunctions::SELU :
+		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : gradient * (exp(sumOfPreviousLayer) - 1);
 		break;
 	}
 	
@@ -135,17 +143,23 @@ double Neuron::ActivationFunctionDerivative(double Value) {
 		return Value >= 0 ? 1 : 0;
 		break;
 	case ActivationFunctions::LeakyReLU :
-		return Value > 0 ? 1 : 0.01;
+		return Value >= 0 ? 1 : 0.01;
 		break;
 	case ActivationFunctions::ParametricReLU :
+		return Value >= 0 ? 1 : PARAMETER_FOR_ParametricReLU;
 		break;
 	case ActivationFunctions::ELU :
+		return Value >= 0 ? 1 : ActivationFunction(Value) - PARAMETER_FOR_ELU;
 		break;
 	case ActivationFunctions::Swish :
+		return (ActivationFunction(Value) + (1 / (1 + exp(-Value))) * (1 - ActivationFunction(Value)));
 		break;
 	case ActivationFunctions::GELU :
+		0.5 * erf(Value / sqrt(2)) + 0.398942 * Value * exp(pow(-Value, 2)) + 0.5;
+		break;
 		break;
 	case ActivationFunctions::SELU :
+		return Value >= 0 ? 1 : ActivationFunction(Value) - gradient;
 		break;
 	}
 	

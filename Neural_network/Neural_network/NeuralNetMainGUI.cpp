@@ -252,8 +252,12 @@ System::Void  NeuralNetGUI::MainForm::custom_nn_CheckedChanged(System::Object^ s
 		return;
 	}
 
+	String^ s = "In the Networks folder, select the file with the name of your chosen network";
+	MessageBox::Show(s);
+
 	Stream^ MyStream = nullptr;
 	OpenFileDialog^ openFileDialog_Net = gcnew OpenFileDialog;
+	openFileDialog_Net->RestoreDirectory = true;
 	openFileDialog_Net->InitialDirectory = "Networks";
 	openFileDialog_Net->Filter = "Text Files | *_info.txt";
 	openFileDialog_Net->FilterIndex = 2;
@@ -326,7 +330,10 @@ System::Void  NeuralNetGUI::MainForm::clear_button_Click(System::Object^ sender,
  It then loads the image into the drawing canvas and prepares the image vector for processing by the neural network.*/
 System::Void  NeuralNetGUI::MainForm::UploadButton_Click(System::Object^ sender, System::EventArgs^ e) {
 	Stream^ MyStream = nullptr;
+	String^ s = "Select an image, which is subsequently converted into a 28x28 field";
+	MessageBox::Show(s);
 	OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
+	openFileDialog1->RestoreDirectory = true;
 	openFileDialog1->InitialDirectory = "Numbers";
 	openFileDialog1->Filter = "Image Files | *.jpg;*.jpeg;*.png";
 	openFileDialog1->FilterIndex = 1;

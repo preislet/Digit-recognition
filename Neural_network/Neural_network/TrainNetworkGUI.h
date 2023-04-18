@@ -70,6 +70,7 @@ namespace TrainGUI {
 	private: System::Windows::Forms::Label^ label_Name;
 	private: System::Windows::Forms::TextBox^ textBox_Name;
 	private: System::Windows::Forms::Label^ label_progress;
+	private: System::Windows::Forms::Label^ label7;
 
 	private:
 		/// <summary>
@@ -113,6 +114,7 @@ namespace TrainGUI {
 			this->label_Name = (gcnew System::Windows::Forms::Label());
 			this->textBox_Name = (gcnew System::Windows::Forms::TextBox());
 			this->label_progress = (gcnew System::Windows::Forms::Label());
+			this->label7 = (gcnew System::Windows::Forms::Label());
 			this->tableLayoutPanel_activationFunction->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -516,11 +518,23 @@ namespace TrainGUI {
 			this->label_progress->Text = L"Training finished";
 			this->label_progress->Visible = false;
 			// 
+			// label7
+			// 
+			this->label7->AutoSize = true;
+			this->label7->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+				static_cast<System::Byte>(238)));
+			this->label7->Location = System::Drawing::Point(148, 102);
+			this->label7->Name = L"label7";
+			this->label7->Size = System::Drawing::Size(374, 20);
+			this->label7->TabIndex = 19;
+			this->label7->Text = L"Training is possible only when all text boxes are filled";
+			// 
 			// TrainNetworkGUI
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(681, 644);
+			this->Controls->Add(this->label7);
 			this->Controls->Add(this->label_progress);
 			this->Controls->Add(this->textBox_Name);
 			this->Controls->Add(this->label_Name);
