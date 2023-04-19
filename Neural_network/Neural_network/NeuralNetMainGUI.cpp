@@ -334,7 +334,7 @@ System::Void  NeuralNetGUI::MainForm::clear_button_Click(System::Object^ sender,
  It then loads the image into the drawing canvas and prepares the image vector for processing by the neural network.*/
 System::Void  NeuralNetGUI::MainForm::UploadButton_Click(System::Object^ sender, System::EventArgs^ e) {
 	Stream^ MyStream = nullptr;
-	String^ s = "Select an image, which is subsequently converted into a 28x28 field";
+	String^ s = "Select an image, which will be subsequently converted into a 28x28 field";
 	MessageBox::Show(s);
 	OpenFileDialog^ openFileDialog1 = gcnew OpenFileDialog;
 	openFileDialog1->RestoreDirectory = true;

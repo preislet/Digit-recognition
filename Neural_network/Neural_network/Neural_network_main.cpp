@@ -22,9 +22,6 @@ int main(int argc, char** argv){
 		Application::SetCompatibleTextRenderingDefault(false);
 		Application::Run(gcnew NeuralNetGUI::MainForm());
 	}
-	
-	
-
 	return 0;
 	
 }
