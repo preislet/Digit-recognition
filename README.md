@@ -11,6 +11,6 @@ The neural network is written using standard libraries only (the neural network 
 ## important files
 Neural network is designed especially for MNIST dataset in .csv format. You can download dataset in .csv format here:
 - [Train file](https://drive.google.com/file/d/156TQ-3QJC6vaDW-GeF6V6TKsuOJtKumA/view?usp=share_link)
-- [Test.file](https://drive.google.com/file/d/1I67mUbpdDnrOYxavNFyRgkU9uRtppQmb/view?usp=share_link)
+- [Test file](https://drive.google.com/file/d/1I67mUbpdDnrOYxavNFyRgkU9uRtppQmb/view?usp=share_link)
 
 These two files need to be inserted into folder with source files if user want to train his own neural netwrok.
