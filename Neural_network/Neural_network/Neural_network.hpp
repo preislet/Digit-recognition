@@ -98,6 +98,7 @@ public:
     void InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights);
     std::vector<int> GetTopology() const;
     std::vector<double> GetResults() const;
+    std::vector<Layer> GetLayers() const;
     double AverageGetError() const;
     std::vector<std::vector<std::vector<double>>> GetWeights() const;
 };

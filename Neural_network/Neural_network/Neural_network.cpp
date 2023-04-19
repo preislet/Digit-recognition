@@ -365,6 +365,11 @@ std::vector<double> NeuralNet::GetResults() const
 	return resultValues;
 }
 
+std::vector<Layer> NeuralNet::GetLayers() const
+{
+	return layers;
+}
+
 
 /*This function takes in several parameters related to a neural network and prints them to the console.
  It first prints the expected label and the network output index, followed by the exact probability values obtained from the network.

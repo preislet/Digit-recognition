@@ -267,7 +267,11 @@ System::Void  NeuralNetGUI::MainForm::custom_nn_CheckedChanged(System::Object^ s
 		System::String^ sFileName = openFileDialog_Net->FileName;
 		TrainGUI::MarshalString(sFileName, fileName);
 	}
-	if (fileName == "") return;
+	if (fileName == "")
+	{
+		standard_nn->Checked = true;
+		return;
+	}
 	const std::wstring weights_path(fileName.begin(), fileName.end());
 
 	std::ifstream infoFile(weights_path.c_str());
