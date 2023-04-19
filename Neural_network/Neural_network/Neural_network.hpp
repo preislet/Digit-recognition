@@ -13,8 +13,8 @@ class Neuron;
 class NeuralNet;
 using Layer = std::vector<Neuron>;
 
-constexpr static double PARAMETER_FOR_ParametricReLU = 0.8;
-constexpr static double PARAMETER_FOR_ELU = 1.0;
+constexpr static double PARAMETER_FOR_ParametricReLU = 0.3;
+constexpr static double PARAMETER_FOR_ELU = 0.01;
 
 enum class ActivationFunctions
 {
