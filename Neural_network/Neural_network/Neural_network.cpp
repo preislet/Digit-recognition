@@ -93,7 +93,6 @@ void Neuron::InsertWeights(const std::vector<double> &weight)
 //Implements the sigmoid activation function for a neuron.
 double Neuron::ActivationFunction(double sumOfPreviousLayer)
 {
-	//TODO pridelat funkce
 	switch(activationFunctionName)
 	{
 	case ActivationFunctions::Sigmoid:
@@ -124,13 +123,11 @@ double Neuron::ActivationFunction(double sumOfPreviousLayer)
 		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : gradient * (exp(sumOfPreviousLayer) - 1);
 		break;
 	}
-	
+	return 0;
 }
 
 //Calculates the derivative of the sigmoid activation function for a neuron.
 double Neuron::ActivationFunctionDerivative(double Value) {
-
-	//TODO pridelat derivace funkcí
 	switch(activationFunctionName)
 	{
 	case ActivationFunctions::Sigmoid:
@@ -155,14 +152,13 @@ double Neuron::ActivationFunctionDerivative(double Value) {
 		return (ActivationFunction(Value) + (1 / (1 + exp(-Value))) * (1 - ActivationFunction(Value)));
 		break;
 	case ActivationFunctions::GELU :
-		0.5 * erf(Value / sqrt(2)) + 0.398942 * Value * exp(pow(-Value, 2)) + 0.5;
-		break;
+		return (0.5 * erf(Value / sqrt(2)) + 0.398942 * Value * exp(pow(-Value, 2)) + 0.5);
 		break;
 	case ActivationFunctions::SELU :
 		return Value >= 0 ? 1 : ActivationFunction(Value) - gradient;
 		break;
 	}
-	
+	return 0;
 }
 
 //Calculates the sum of the derivatives of the weights of the next layer for a neuron.
@@ -269,7 +265,7 @@ void NeuralNet::CalculateOutputLayerGradients(const std::vector<double>& targetV
 It calls the CalculateHiddenGradient() function for each hidden neuron in each hidden layer of the network.*/
 void NeuralNet::CalculateHiddenLayersGradients()
 {
-	const unsigned int NumOfLayersWithoutOutputLayer = layers.size() - 2;
+	const unsigned int NumOfLayersWithoutOutputLayer = int(layers.size() - 2);
 
 	for (unsigned int NumOfLayer = NumOfLayersWithoutOutputLayer; NumOfLayer > 0; --NumOfLayer)
 	{
@@ -285,7 +281,7 @@ void NeuralNet::CalculateHiddenLayersGradients()
  *It uses the back propagation algorithm to adjust the weights in the direction that minimizes the error.*/
 void NeuralNet::UpdateConnectionWeights()
 {
-	for (unsigned int LayerNum = layers.size() - 1; LayerNum > 0; --LayerNum)
+	for (unsigned int LayerNum = int(layers.size() - 1); LayerNum > 0; --LayerNum)
 	{
 		Layer& currentLayer = layers[LayerNum];
 		Layer& previousLayer = layers[LayerNum - 1];
@@ -408,11 +404,11 @@ void printValues(const int label, const ptrdiff_t index, const std::vector<doubl
 /*This function takes in a reference to a NeuralNet object (a neural network) and a vector of input training samples, and updates the network's weights using back propagation.
  For each sample in the vector, it extracts the label and target values, feeds the input forward through the network, and performs back propagation to update the weights based on the
  error between the output and target values.*/
-void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples)
+void TrainNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples)
 {
-	for (auto trainSample : trainSamples)
+	for (auto &trainSample : trainSamples)
 	{
-		const int label = trainSample[0];
+		const int label = int(trainSample[0]);
 
 		std::vector<double> targetValues(10, 0.0);
 		targetValues[label] = 1.0;
@@ -433,13 +429,13 @@ void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>
 /*This function takes in a reference to a NeuralNet object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
  It iterates through the test samples, extracts the label and target values, feeds the input forward through the network, and compares the network's output to the true label
  to count the number of correct predictions. If the print flag is true, it also calls the */
-double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
+double testNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print)
 {
 	std::vector<std::vector<int>> corrects(10, std::vector<int>(2, 0));
 	double correct_predictions = 0.0;
-	for (auto testSample : testSamples)
+	for (auto &testSample : testSamples)
 	{
-		const int label = testSample[0];
+		const int label = int(testSample[0]);
 
 		std::vector<double> targetValues(10, 0.0);
 		targetValues[label] = 1.0;

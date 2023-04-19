@@ -8,6 +8,17 @@
 
 #include "TrainNetworkGUI.h"
 
+TrainGUI::TrainNetworkGUI::TrainNetworkGUI(void)
+{
+	InitializeComponent();
+}
+TrainGUI::TrainNetworkGUI::~TrainNetworkGUI()
+{
+	if (components)
+	{
+		delete components;
+	}
+}
 /*This function takes a managed System::String and converts it to an unmanaged std::string.
  It is used to convert the file path of an image from the OpenFileDialog component into a format that can be used by the C++ code.*/
 void TrainGUI::MarshalString(String^ s, std::string& os)

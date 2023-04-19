@@ -13,8 +13,8 @@ class Neuron;
 class NeuralNet;
 using Layer = std::vector<Neuron>;
 
-constexpr static unsigned int PARAMETER_FOR_ParametricReLU = 0.8;
-constexpr static unsigned int PARAMETER_FOR_ELU = 1;
+constexpr static double PARAMETER_FOR_ParametricReLU = 0.8;
+constexpr static double PARAMETER_FOR_ELU = 1.0;
 
 enum class ActivationFunctions
 {
@@ -104,8 +104,8 @@ public:
 };
 std::vector<std::vector<double>> read_csv(const std::string& path);
 void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
-void TrainNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples);
-double testNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print = false);
+void TrainNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples);
+double testNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print = false);
 void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string &path);
 void insertWeightsToNet(NeuralNet& MyNetwork,const std::string& path);
 
