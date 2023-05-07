@@ -4,6 +4,7 @@
 #include<iostream>
 #include <vector>
 #include<sstream>
+
 #include "Image_conversion.hpp"
 #include "Neural_network.hpp"
 #using <System.dll>
@@ -24,24 +25,12 @@ namespace TrainGUI {
 	public ref class TrainNetworkGUI : public System::Windows::Forms::Form
 	{
 	public:
-		TrainNetworkGUI(void)
-		{
-			InitializeComponent();
-		}
+		TrainNetworkGUI(void);
 
 	protected:
-		/// <summary>
-		/// Uvoln?te všechny používané prost?edky.
-		/// </summary>
-		~TrainNetworkGUI()
-		{
-			if (components)
-			{
-				delete components;
-			}
-		}
+		~TrainNetworkGUI();
+
 	private: System::Windows::Forms::Button^ button_Train;
-	protected:
 	private: System::Windows::Forms::Button^ button_SaveNetwork;
 	private: System::Windows::Forms::Label^ label_accuracy;
 	private: System::Windows::Forms::Label^ label_alpha;
@@ -73,16 +62,10 @@ namespace TrainGUI {
 	private: System::Windows::Forms::Label^ label7;
 
 	private:
-		/// <summary>
-		/// Vyžaduje se prom?nná návrhá?e.
-		/// </summary>
 		System::ComponentModel::Container^ components;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Metoda vyžadovaná pro podporu Návrhá?e - neupravovat
-		/// obsah této metody v editoru kódu.
-		/// </summary>
+		
 		void InitializeComponent(void)
 		{
 			this->button_Train = (gcnew System::Windows::Forms::Button());

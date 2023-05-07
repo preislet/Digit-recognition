@@ -30,15 +30,15 @@ std::vector<std::vector<RGB>> ConvertToVector(const std::string& path)
     const std::wstring Image_path(path.begin(), path.end());
 
     Gdiplus::Bitmap image(Image_path.c_str(), false);
-    const size_t width = image.GetWidth();
-    const size_t height = image.GetHeight();
+    const int width = image.GetWidth();
+    const int height = image.GetHeight();
 
     std::vector<std::vector<RGB>> Image_vector;
-    for (size_t i = 0; i < width; i++)
+    for (int i = 0; i < width; i++)
     {
         std::vector<RGB> row_vector;
         row_vector.reserve(width);
-        for (size_t j = 0; j < height; j++)
+        for (int j = 0; j < height; j++)
         {
             RGB rgb;
             Gdiplus::Color argb;
@@ -151,9 +151,9 @@ std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std:
  and a space character is used to represent a white pixel.*/
 void PrintNumber(const std::vector<double>& Img_vector)
 {
-    for (int i = 0; i < 28; ++i)
+    for (size_t i = 0; i < 28; ++i)
     {
-        for (int j = 0; j < 28; ++j)
+        for (size_t j = 0; j < 28; ++j)
         {
             if (Img_vector[28 * i + j] == 0.0) std::cout << " ";
             else std::cout << "S";

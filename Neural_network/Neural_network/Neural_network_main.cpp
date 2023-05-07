@@ -3,11 +3,11 @@
 #include<crtdbg.h>
 
 using namespace System;
-
 using namespace System::Windows::Forms;
 
 #include "NeuralNetMainGUI.h"
-#include "Tests.hpp";
+#include "Tests.hpp"
+
 [STAThread]
 int main(int argc, char** argv){
 	std::vector<std::string> args(argv, argv + argc);
@@ -23,6 +23,5 @@ int main(int argc, char** argv){
 		Application::Run(gcnew NeuralNetGUI::MainForm());
 	}
 	return 0;
-	
 }
 

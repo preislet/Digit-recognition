@@ -134,7 +134,7 @@ void NeuralNetGUI::MainForm::HighestScorePrediction(const std::vector<std::vecto
 		if (max_element < resultVector[curr_max_element_index])
 		{
 			max_element = resultVector[curr_max_element_index];
-			max_index = curr_max_element_index;
+			max_index = int(curr_max_element_index);
 			label_result->Text = max_index.ToString();
 			fillOutputTable(resultVector);
 		}

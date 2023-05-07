@@ -41,7 +41,7 @@ void Testing::TestNeuralNetCtor()
 	std::vector<Layer> layers = TestNet.GetLayers();
 	for(const Layer &layer: layers)
 	{
-		layersSize.push_back(layer.size());
+		layersSize.push_back(int(layer.size()));
 	}
 
 	if (topology == TestNet.GetTopology()) topologyCheck = true;
@@ -196,4 +196,5 @@ void Testing::TestWritingWeightsToFileANIinsertWeightsToNet()
 
 	remove("TestingWritingWeightsToFile");
 }
+
 
