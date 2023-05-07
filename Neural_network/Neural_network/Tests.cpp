@@ -176,8 +176,8 @@ void Testing::TestWritingWeightsToFileANIinsertWeightsToNet()
 		topology.emplace_back(rand() / 1000);
 	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctionsNum>(0));
 	auto preWeights = TestNet.GetWeights();
-	writeWeightsToFile(TestNet, "TestingWritingWeightsToFile");
-	insertWeightsToNet(TestNet, "TestingWritingWeightsToFile");
+	fileHandler.writeWeightsToFile(TestNet, "TestingWritingWeightsToFile");
+	fileHandler.insertWeightsToNet(TestNet, "TestingWritingWeightsToFile");
 	auto postWeights = TestNet.GetWeights();
 
 	bool areSame = true;

@@ -17,14 +17,19 @@ using Layer = std::vector<Neuron>;
 constexpr static double PARAMETER_FOR_ParametricReLU = 0.3;
 constexpr static double PARAMETER_FOR_ELU = 0.01;
 constexpr static double BIAS = 1.0;
+
+constexpr static unsigned int OUTPUT_LAYER = 10;
+constexpr static unsigned int NUM_OF_ACTIVATION_FUNCTIONS = 10;
 constexpr static unsigned int IMAGE_DIMENSION = 28; // 28x28 pixels
 constexpr static unsigned int IMAGE_SIZE = IMAGE_DIMENSION * IMAGE_DIMENSION;
 
-
+// 
 class ActivationFunctionBase {
 public:
     virtual double EvaluateActivationFunction(double& value, double& gradient) = 0;
     virtual double EvaluateActivationFunctionDerivative(double& value, double& gradient) = 0;
+
+    ~ActivationFunctionBase() = default;
 };
 class ActivationFunctionSigmoid :public ActivationFunctionBase
 {
@@ -167,11 +172,23 @@ public:
     double AverageGetError() const;
     std::vector<std::vector<std::vector<double>>> GetWeights() const;
 };
-std::vector<std::vector<double>> read_csv(const std::string& path);
-void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
-void TrainNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples);
-double testNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print = false);
-void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path);
-void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path);
+
+class FileHandler
+{
+public:
+    std::vector<std::vector<double>> read_csv(const std::string& path);
+    void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path);
+    void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path);
+};
+
+class NetworksTraining
+{
+public:
+    void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
+    void TrainNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples);
+    double testNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print = false);
+};
+
+
 
 #endif // NEURAL_NET_HPP

@@ -10,6 +10,10 @@
 
 namespace Testing
 {
+	static NetworksTraining networksTraining;
+	static FileHandler fileHandler;
+
+
 	void RunAllTests();
 	void TestNeuralNetCtor();
 	void TestNeuralNetUpdate();

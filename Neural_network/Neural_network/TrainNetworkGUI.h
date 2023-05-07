@@ -22,6 +22,11 @@ namespace TrainGUI {
 	void MarshalString(String^ s, std::string& os);
 
 	static NeuralNet CustomNet;
+
+	static ImageConverison imageConversion;
+	static FileHandler fileHandler;
+	static NetworksTraining networksTraining;
+
 	public ref class TrainNetworkGUI : public System::Windows::Forms::Form
 	{
 	public:

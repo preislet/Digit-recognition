@@ -397,7 +397,7 @@ std::vector<Layer> NeuralNet::GetLayers() const
  It first prints the expected label and the network output index, followed by the exact probability values obtained from the network.
  It then prints the average error and a blank line. Finally, if the boolean parameter printNumber is true, it prints the input values as a IMAGE_DIMENSIONxIMAGE_DIMENSION grid of characters
  ('S' for non-zero values and ' ' for zero values)*/
-void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber)
+void NetworksTraining::printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber)
 {
 	std::cout << "Expected value: " << label << std::endl;
 	std::cout << "Network output: " << index << std::endl;
@@ -430,7 +430,7 @@ void printValues(const int label, const ptrdiff_t index, const std::vector<doubl
 /*This function takes in a reference to a NeuralNet object (a neural network) and a vector of input training samples, and updates the network's weights using back propagation.
  For each sample in the vector, it extracts the label and target values, feeds the input forward through the network, and performs back propagation to update the weights based on the
  error between the output and target values.*/
-void TrainNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples)
+void NetworksTraining::TrainNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples)
 {
 	for (auto& trainSample : trainSamples)
 	{
@@ -442,20 +442,13 @@ void TrainNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& trai
 
 		MyNetwork.FeedForward(trainSample);
 		MyNetwork.BackPropagation(targetValues);
-
-		//std::vector<double> resultValues = MyNetwork.GetResults();
-		//resultValues.pop_back();
-
-		//const auto max_element = std::max_element(resultValues.begin(), resultValues.end());
-		//const auto max_element_index = std::distance(resultValues.begin(), max_element);
-		//printValues(label, max_element_index, resultValues, trainSample, MyNetwork.AverageGetError(), false);
 	}
 }
 
 /*This function takes in a reference to a NeuralNet object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
  It iterates through the test samples, extracts the label and target values, feeds the input forward through the network, and compares the network's output to the true label
  to count the number of correct predictions. If the print flag is true, it also calls the */
-double testNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print)
+double NetworksTraining::testNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print)
 {
 	std::vector<std::vector<int>> corrects(10, std::vector<int>(2, 0));
 	double correct_predictions = 0.0;
@@ -486,7 +479,7 @@ double testNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& tes
 
 /*his function takes in a file path and reads in a CSV file containing input data for a neural network.
  It returns a vector of vectors of doubles, where each inner vector corresponds to a row of data in the CSV file.*/
-std::vector<std::vector<double>> read_csv(const std::string& path)
+std::vector<std::vector<double>> FileHandler::read_csv(const std::string& path)
 {
 	std::ifstream CSV_File(path);
 	std::string line;
@@ -520,7 +513,7 @@ std::vector<std::vector<double>> read_csv(const std::string& path)
 /*his function takes in a NeuralNet object and writes its weights to a text file in a specific format.
  The weights are stored in a 3D vector, where each layer of the network is a matrix of weights between neurons.
  The function iterates through the layers and matrices of weights, writing each weight to a new line in the file.*/
-void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path = "weights.txt")
+void FileHandler::writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path = "weights.txt")
 {
 	std::string fullpath = "Networks/" + path;
 	const std::wstring weights_path(fullpath.begin(), fullpath.end());
@@ -555,7 +548,7 @@ void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path = "w
 /*This function takes in a NeuralNet object and reads in a text file containing weights in the same format as written by writeWeightsToFile.
  It extracts the weights from the file and inserts them into the NeuralNet object, replacing the existing weights. It assumes that the topology of the NeuralNet object matches the topology used to
  write the weights to the file.*/
-void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path = "weights.txt")
+void FileHandler::insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path = "weights.txt")
 {
 	std::string fullpath = "Networks/" + path;
 	const std::wstring weights_path(fullpath.begin(), fullpath.end());

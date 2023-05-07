@@ -24,7 +24,7 @@ using namespace System::Drawing;
 NeuralNetGUI::MainForm::MainForm(void)
 {
 	InitializeComponent();
-	insertWeightsToNet(DefaultNet, "weights.txt");
+	fileHandler.insertWeightsToNet(DefaultNet, "weights.txt");
 	int numOfColumns = tableLayoutPanel_draw->ColumnCount;
 	int numOfRows = tableLayoutPanel_draw->RowCount;
 	for (int i = 0; i < numOfColumns; ++i)
@@ -66,7 +66,7 @@ int NeuralNetGUI::MainForm::returnBottomBorder(int rows, int columns)
 		bool changed = false;
 		for (int j = 0; j < columns; j++)
 			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
-				corner = 27 - i;
+				corner = IMAGE_DIMENSION - 1 - i;
 				changed = true;
 				break;
 			}
@@ -98,7 +98,7 @@ int NeuralNetGUI::MainForm::returnRightBorder(int rows, int columns)
 		bool changed = false;
 		for (int i = 0; i < rows; i++)
 			if (tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor == System::Drawing::SystemColors::Desktop) {
-				corner = 27 - j;
+				corner = IMAGE_DIMENSION - 1 - j;
 				changed = true;
 				break;
 			}
@@ -297,12 +297,15 @@ System::Void  NeuralNetGUI::MainForm::custom_nn_CheckedChanged(System::Object^ s
 	CustomNet.NeuralNetUpdate(topology, eta, alpha, actFun);
 	std::cout << CustomNet.eta << std::endl;
 	std::cout << CustomNet.alpha << std::endl;
-	
-	std::string weights_filename = fileName.erase(fileName.length() - 9) + ".txt";
+
+	const std::string suffiix = "_info.txt";
+	const int suffixLength = suffiix.length();
+
+	std::string weights_filename = fileName.erase(fileName.length() - suffixLength) + ".txt";
 
 	std::string base_filename = fileName.substr(fileName.find_last_of("/\\") + 1);
 	String^ sysstr = gcnew String(base_filename.data());
-	insertWeightsToNet(CustomNet, base_filename + ".txt");
+	fileHandler.insertWeightsToNet(CustomNet, base_filename + ".txt");
 	label_NameOfCustomNeuralNet->Text = "Name of custom neural Net: " + sysstr;
 }
 
@@ -351,14 +354,14 @@ System::Void  NeuralNetGUI::MainForm::UploadButton_Click(System::Object^ sender,
 	if (fileName == "") return;
 	clear_button_Click(sender, e);
 
-	std::vector<int> Img_vector = ConvertToCompressedBinaryNet_readyVector(fileName);
+	std::vector<int> Img_vector = imageConversion.ConvertToCompressedBinaryNet_readyVector(fileName);
 
 
 	int columnCount = tableLayoutPanel_draw->ColumnCount;
 	int rowCount = tableLayoutPanel_draw->RowCount;
 	for (int i = 0; i < columnCount; ++i)
 		for (int j = 0; j < rowCount; ++j)
-			if (Img_vector[28 * i + j] == 1.00) tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor = System::Drawing::SystemColors::Desktop;
+			if (Img_vector[IMAGE_DIMENSION * i + j] == 1.00) tableLayoutPanel_draw->GetControlFromPosition(j, i)->BackColor = System::Drawing::SystemColors::Desktop;
 }
 
 // This function handles the click event of the up button. It moves the currently selected item in the list box up by one position.

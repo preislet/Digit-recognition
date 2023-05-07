@@ -74,7 +74,7 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 		topologyInserted = false;
 		textBox_topology->Text = "";
 	}
-	if(topology[0] != 784 && topology.back() != 10)
+	if(topology[0] != IMAGE_SIZE && topology.back() != OUTPUT_LAYER)
 	{
 		topologyInserted = false;
 		textBox_topology->Text = "";
@@ -111,11 +111,10 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 	MessageBox::Show(s);
 
 	CustomNet.NeuralNetUpdate(topology, Eta, Alpha, activationFunction);
-
-	std::vector<std::vector<double>> testSamples = read_csv("test.csv");
-	std::vector<std::vector<double>> trainSamples = read_csv("train.csv");
-	TrainNetwork(CustomNet, trainSamples);
-	double accuracy = testNetwork(CustomNet, testSamples);
+	std::vector<std::vector<double>> testSamples = fileHandler.read_csv("test.csv");
+	std::vector<std::vector<double>> trainSamples = fileHandler.read_csv("train.csv");
+	networksTraining.TrainNetwork(CustomNet, trainSamples);
+	double accuracy = networksTraining.testNetwork(CustomNet, testSamples);
 
 	label_accuracy->Text = "Accuracy: " + (accuracy * 100).ToString() + "%";
 	button_SaveNetwork->Visible = true;
@@ -127,12 +126,12 @@ System::Void TrainGUI::TrainNetworkGUI::button_SaveNetwork_Click(System::Object^
 	std::string name;
 	MarshalString(textBox_Name->Text, name);
 	writeNeuralNetInfoToFile(CustomNet, name);
-	writeWeightsToFile(CustomNet, name + ".txt");
+	fileHandler.writeWeightsToFile(CustomNet, name + ".txt");
 	this->Close();
 }
 System::Void TrainGUI::TrainNetworkGUI::check_ActivationFunction_Click(System::Object^ sender, System::EventArgs^ e)
 {
-	for (int i = 1; i < 10; i++)
+	for (int i = 1; i < NUM_OF_ACTIVATION_FUNCTIONS; i++)
 	{
 		CheckBox^ checkBox = safe_cast<CheckBox^>(tableLayoutPanel_activationFunction->GetControlFromPosition(0, i));
 		if (checkBox == sender && checkBox->Checked == true) activationFunctionNum = i - 1;
