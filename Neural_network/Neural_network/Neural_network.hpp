@@ -18,6 +18,8 @@ constexpr static double PARAMETER_FOR_ParametricReLU = 0.3;
 constexpr static double PARAMETER_FOR_ELU = 0.01;
 constexpr static double BIAS = 1.0;
 constexpr static unsigned int IMAGE_DIMENSION = 28; // 28x28 pixels
+constexpr static unsigned int IMAGE_SIZE = IMAGE_DIMENSION * IMAGE_DIMENSION;
+
 
 class ActivationFunctionBase {
 public:
