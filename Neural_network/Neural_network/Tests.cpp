@@ -34,7 +34,7 @@ void Testing::TestNeuralNetCtor()
 		topology.emplace_back(rand()/100);
 	int alpha = rand();
 	int eta = rand();
-	ActivationFunctions actFun = static_cast<ActivationFunctions>(rand() % 10);
+	ActivationFunctionsNum actFun = static_cast<ActivationFunctionsNum>(rand() % 10);
 
 	NeuralNet TestNet(topology, eta, alpha, actFun);
 	std::vector<int> layersSize;
@@ -67,7 +67,7 @@ void Testing::TestNeuralNetUpdate()
 		topology.emplace_back(rand() / 100);
 	int alpha = rand();
 	int eta = rand();
-	ActivationFunctions actFun = static_cast<ActivationFunctions>(rand() % 10);
+	ActivationFunctionsNum actFun = static_cast<ActivationFunctionsNum>(rand() % 10);
 
 	NeuralNet TestNet(topology, eta, alpha, actFun);
 
@@ -77,7 +77,7 @@ void Testing::TestNeuralNetUpdate()
 		newTopology.emplace_back(rand() / 100);
 	int newAlpha = rand();
 	int newEta = rand();
-	ActivationFunctions newActFun = static_cast<ActivationFunctions>(rand() % 10);
+	ActivationFunctionsNum newActFun = static_cast<ActivationFunctionsNum>(rand() % 10);
 
 	TestNet.NeuralNetUpdate(newTopology, newEta, newAlpha, newActFun);
 	NeuralNet TestNet2(newTopology, newEta, newAlpha, newActFun);
@@ -99,7 +99,7 @@ void Testing::TestGetWeights()
 	std::vector<int> topology;
 	for (int i = 0; i < 10; i++)
 		topology.emplace_back(rand() / 100);
-	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctions>(0));
+	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctionsNum>(0));
 	auto weights = TestNet.GetWeights();
 	auto layers = TestNet.GetLayers();
 
@@ -145,7 +145,7 @@ void Testing::TestInsertingWeights()
 		weights.emplace_back(LayerConnections);
 	}
 	
-	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctions>(0));
+	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctionsNum>(0));
 	TestNet.InsertWeights(weights);
 
 	std::vector<std::vector<std::vector<double>>> outputWeights = TestNet.GetWeights();
@@ -174,7 +174,7 @@ void Testing::TestWritingWeightsToFileANIinsertWeightsToNet()
 	std::vector<int> topology;
 	for (int i = 0; i < 3; i++)
 		topology.emplace_back(rand() / 1000);
-	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctions>(0));
+	NeuralNet TestNet(topology, 0, 0, static_cast<ActivationFunctionsNum>(0));
 	auto preWeights = TestNet.GetWeights();
 	writeWeightsToFile(TestNet, "TestingWritingWeightsToFile");
 	insertWeightsToNet(TestNet, "TestingWritingWeightsToFile");

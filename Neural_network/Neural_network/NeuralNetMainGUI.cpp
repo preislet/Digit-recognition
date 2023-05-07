@@ -286,7 +286,7 @@ System::Void  NeuralNetGUI::MainForm::custom_nn_CheckedChanged(System::Object^ s
 
 	double eta = std::stod(sEta);
 	double alpha = std::stof(sAlpha);
-	ActivationFunctions actFun = static_cast<ActivationFunctions>(std::stoi(sActFun));
+	ActivationFunctionsNum actFun = static_cast<ActivationFunctionsNum>(std::stoi(sActFun));
 	std::vector<int> topology;
 
 	std::stringstream ss(sTopology);

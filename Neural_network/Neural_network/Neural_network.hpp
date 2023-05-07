@@ -8,15 +8,78 @@
 #include <cassert>
 #include<fstream>
 #include<sstream>
+#include<memory>
 
 class Neuron;
 class NeuralNet;
 using Layer = std::vector<Neuron>;
 
-constexpr static unsigned int PARAMETER_FOR_ParametricReLU = 0.8;
-constexpr static unsigned int PARAMETER_FOR_ELU = 1;
+constexpr static double PARAMETER_FOR_ParametricReLU = 0.3;
+constexpr static double PARAMETER_FOR_ELU = 0.01;
+constexpr static double BIAS = 1.0;
+constexpr static unsigned int IMAGE_DIMENSION = 28;  // 28x28 pixels
 
-enum class ActivationFunctions
+class ActivationFunctionBase {
+public:
+    virtual double EvaluateActivationFunction(double& value, double& gradient) = 0;
+    virtual double EvaluateActivationFunctionDerivative(double& value, double& gradient) = 0;
+};
+class ActivationFunctionSigmoid :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionTanh :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionReLU :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionLeakyReLU :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionParametricReLU :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionELU :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionSwish :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionGELU :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+class ActivationFunctionSELU :public ActivationFunctionBase
+{
+public:
+    double virtual EvaluateActivationFunction(double& value, double& gradient) override;
+    double virtual EvaluateActivationFunctionDerivative(double& value, double& gradient) override;
+};
+
+enum class ActivationFunctionsNum
 {
     Sigmoid,
     Tanh,
@@ -27,6 +90,7 @@ enum class ActivationFunctions
     Swish,
     GELU,
     SELU,
+    COUNT_
 };
 
 struct RMSError {
@@ -47,29 +111,27 @@ class Neuron {
 private:
     int numberOfConnections;
     int index;
-    ActivationFunctions activationFunctionName;
+    ActivationFunctionsNum activationFunctionName;
     double eta;
     double alpha;
-    static constexpr int BIAS = 1;
-
     double inputValue;
     double outputValue;
     double gradient;
-
     std::vector<Connection> outputWeights;
+    std::vector<std::shared_ptr<ActivationFunctionBase>> ActivationFunctions;
 
-	double ActivationFunction(double sumOfPreviousLayer);
+    double ActivationFunction(double sumOfPreviousLayer);
     double ActivationFunctionDerivative(double Value);
     double SumDerivationsOfWeightsOfNextLayer(const Layer& nextLayer) const;
 public:
-    Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctions activationFunction);
+    Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctionsNum activationFunction, const std::vector<std::shared_ptr<ActivationFunctionBase>>& ActivationFunctions);
     void SetOutputValue(const double outVal);
     double GetOutputValue() const;
     void FeedForward(const Layer& previousLayer);
     void CalculateOutputGradients(const double targetValue);
     void CalculateHiddenGradient(const Layer& nextLayer);
     void UpdatedInputWeights(Layer& prevLayer) const;
-    void InsertWeights(const std::vector<double> &weight);
+    void InsertWeights(const std::vector<double>& weight);
     std::vector<double> GetWeights() const;
 };
 
@@ -77,11 +139,12 @@ class NeuralNet {
 public:
     double alpha;
     double eta;
-    ActivationFunctions activationFunction;
+    ActivationFunctionsNum activationFunction;
 private:
     std::vector<int> topology;
     std::vector<Layer> layers;
     RMSError RMS_error;
+    std::vector<std::shared_ptr<ActivationFunctionBase>> ActivationFunctions;
 
     void CalculateRMS_error(const std::vector<double>& targetValues);
     void CalculateRecentAverageError();
@@ -91,8 +154,8 @@ private:
 
 public:
     NeuralNet();
-    NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction);
-    void NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction);
+    NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctionsNum activationFunction);
+    void NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctionsNum activationFunction);
     void FeedForward(const std::vector<double>& inputValues);
     void BackPropagation(const std::vector<double>& targetValues);
     void InsertWeights(const std::vector<std::vector<std::vector<double>>>& weights);
@@ -104,9 +167,9 @@ public:
 };
 std::vector<std::vector<double>> read_csv(const std::string& path);
 void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
-void TrainNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples);
-double testNetwork(NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print = false);
-void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string &path);
-void insertWeightsToNet(NeuralNet& MyNetwork,const std::string& path);
+void TrainNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples);
+double testNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print = false);
+void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path);
+void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path);
 
 #endif // NEURAL_NET_HPP

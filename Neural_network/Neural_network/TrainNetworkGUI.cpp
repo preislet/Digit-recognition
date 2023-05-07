@@ -28,7 +28,7 @@ void TrainGUI::TrainNetworkGUI::writeNeuralNetInfoToFile(const NeuralNet& Custom
 	std::string sTopology;
 	double eta = CustomNet.eta;
 	double alpha = CustomNet.alpha;
-	ActivationFunctions ActFun = CustomNet.activationFunction;
+	ActivationFunctionsNum ActFun = CustomNet.activationFunction;
 
 	for (auto NumofNeuron : topology)
 		sTopology += std::to_string(NumofNeuron) + ";";
@@ -37,7 +37,7 @@ void TrainGUI::TrainNetworkGUI::writeNeuralNetInfoToFile(const NeuralNet& Custom
 	infoFile << sTopology << "\n";
 	infoFile << eta << "\n";
 	infoFile << alpha << "\n";
-	infoFile << static_cast<std::underlying_type_t<ActivationFunctions>>(ActFun) << "\n" ;
+	infoFile << static_cast<std::underlying_type_t<ActivationFunctionsNum>>(ActFun) << "\n" ;
 }
 
 
@@ -85,7 +85,7 @@ System::Void TrainGUI::TrainNetworkGUI::button_Train_Click(System::Object^ sende
 	MarshalString(textBox_alpha->Text, sAlpha);
 	MarshalString(textBox_eta->Text, sEta);
 
-	ActivationFunctions activationFunction = static_cast<ActivationFunctions>(activationFunctionNum);
+	ActivationFunctionsNum activationFunction = static_cast<ActivationFunctionsNum>(activationFunctionNum);
 	double Alpha = std::stod(sAlpha);
 	double Eta = std::stod(sEta);
 	if (Eta <= 0) {

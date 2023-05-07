@@ -7,6 +7,7 @@
 #include<fstream>
 #include<sstream>
 #include<cmath>
+#include<memory>
 
 #include "Neural_network.hpp"
 
@@ -17,23 +18,80 @@ using Layer = std::vector<Neuron>;
 //Constructor for the Connection class, which initializes the weight of the connection to a random value and sets the delta weight to 0.
 ::Connection::Connection()
 {
-	this->weight = RandomNumber()/1000;
+	this->weight = RandomNumber() / 1000;
 	this->deltaWeight = 0;
 }
 
 //Helper function that generates a random number between 0 and 1 for use in initializing connection weights.
-double ::Connection::RandomNumber() { return rand() / double(RAND_MAX);}
+double ::Connection::RandomNumber() { return rand() / double(RAND_MAX); }
+
+double::ActivationFunctionSigmoid::EvaluateActivationFunction(double& value, double& gradient) {
+	return 1 / (1 + exp(-value));
+}
+double::ActivationFunctionSigmoid::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return (1 / (1 + exp(-value))) * (1 - (1 / (1 + exp(-value))));
+}
+double::ActivationFunctionTanh::EvaluateActivationFunction(double& value, double& gradient) {
+	return tanh(value);
+}
+double::ActivationFunctionTanh::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return 1 - (tanh(value) * tanh(value));
+}
+double::ActivationFunctionReLU::EvaluateActivationFunction(double& value, double& gradient) {
+	return std::max(value, 0.0);
+}
+double::ActivationFunctionReLU::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return value >= 0 ? 1 : 0;
+}
+double::ActivationFunctionLeakyReLU::EvaluateActivationFunction(double& value, double& gradient) {
+	return value > 0 ? value : 0.01 * value;
+}
+double::ActivationFunctionLeakyReLU::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return value >= 0 ? 1 : 0.01;
+}
+double::ActivationFunctionParametricReLU::EvaluateActivationFunction(double& value, double& gradient) {
+	return std::max(PARAMETER_FOR_ParametricReLU * value, 0.0);
+}
+double::ActivationFunctionParametricReLU::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return value >= 0 ? 1 : PARAMETER_FOR_ParametricReLU;
+}
+double::ActivationFunctionELU::EvaluateActivationFunction(double& value, double& gradient) {
+	return value > 0 ? value : PARAMETER_FOR_ELU * (exp(value) - 1);
+}
+double::ActivationFunctionELU::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return value >= 0 ? 1 : EvaluateActivationFunction(value, gradient) - PARAMETER_FOR_ELU;
+}
+double::ActivationFunctionSwish::EvaluateActivationFunction(double& value, double& gradient) {
+	return value / (1 + exp(-value));
+}
+double::ActivationFunctionSwish::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return (EvaluateActivationFunction(value, gradient) + (1 / (1 + exp(-value))) * (1 - EvaluateActivationFunction(value, gradient)));
+}
+double::ActivationFunctionSELU::EvaluateActivationFunction(double& value, double& gradient) {
+	return value > 0 ? value : gradient * (exp(value) - 1);
+}
+double::ActivationFunctionSELU::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return value >= 0 ? 1 : EvaluateActivationFunction(value, gradient) - gradient;
+}
+double::ActivationFunctionGELU::EvaluateActivationFunction(double& value, double& gradient) {
+	return 0.5 * value * (1 + erf(value / sqrt(2)));
+}
+double::ActivationFunctionGELU::EvaluateActivationFunctionDerivative(double& value, double& gradient) {
+	return (0.5 * erf(value / sqrt(2)) + 0.398942 * value * exp(pow(-value, 2)) + 0.5);
+}
+
 
 /*Constructor for the Neuron class, which takes as arguments the number of connections to the next layer, the index of the neuron in the current layer,
  and the learning rate (eta) and momentum (alpha) values. It initializes the neuron's output value and gradient to 0, and creates a vector of output weights
  with random initial weights.*/
-::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctions activationFunctionName)
+::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctionsNum activationFunctionName, const std::vector<std::shared_ptr<ActivationFunctionBase>>& ActivationFunctions)
 {
 	this->numberOfConnections = numberOfConnections;
 	this->index = index;
 	this->eta = eta;
 	this->alpha = alpha;
 	this->activationFunctionName = activationFunctionName;
+	this->ActivationFunctions = ActivationFunctions;
 	inputValue = 0;
 	outputValue = 0;
 	gradient = 0;
@@ -84,85 +142,18 @@ void Neuron::UpdatedInputWeights(Layer& prevLayer) const
 }
 
 //Inserts weights to outputWeights vector 
-void Neuron::InsertWeights(const std::vector<double> &weight)
+void Neuron::InsertWeights(const std::vector<double>& weight)
 {
-	for(size_t i = 0; i < weight.size(); ++i)
+	for (size_t i = 0; i < weight.size(); ++i)
 		outputWeights[i].weight = weight[i];
 }
 
-//Implements the sigmoid activation function for a neuron.
-double Neuron::ActivationFunction(double sumOfPreviousLayer)
-{
-	//TODO pridelat funkce
-	switch(activationFunctionName)
-	{
-	case ActivationFunctions::Sigmoid:
-		return 1 / (1 + exp(-sumOfPreviousLayer));
-		break;
-	case ActivationFunctions::Tanh:
-		return tanh(sumOfPreviousLayer);
-		break;
-	case ActivationFunctions::ReLU:
-		return std::max(sumOfPreviousLayer, 0.0);
-		break;
-	case ActivationFunctions::LeakyReLU :
-		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : 0.01 * sumOfPreviousLayer;
-		break;
-	case ActivationFunctions::ParametricReLU :
-		return std::max(PARAMETER_FOR_ParametricReLU * sumOfPreviousLayer, 0.0);
-		break;
-	case ActivationFunctions::ELU :
-		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : PARAMETER_FOR_ELU * (exp(sumOfPreviousLayer) - 1);
-		break;
-	case ActivationFunctions::Swish :
-		return sumOfPreviousLayer / (1 + exp(-sumOfPreviousLayer));
-		break;
-	case ActivationFunctions::GELU :
-		return 0.5 * sumOfPreviousLayer * (1 + erf(sumOfPreviousLayer / sqrt(2)));
-		break;
-	case ActivationFunctions::SELU :
-		return sumOfPreviousLayer > 0 ? sumOfPreviousLayer : gradient * (exp(sumOfPreviousLayer) - 1);
-		break;
-	}
-	
+double Neuron::ActivationFunction(double sumOfPreviousLayer){
+	return ActivationFunctions[static_cast<int>(activationFunctionName)]->EvaluateActivationFunction(sumOfPreviousLayer, gradient);
 }
 
-//Calculates the derivative of the sigmoid activation function for a neuron.
 double Neuron::ActivationFunctionDerivative(double Value) {
-
-	//TODO pridelat derivace funkcí
-	switch(activationFunctionName)
-	{
-	case ActivationFunctions::Sigmoid:
-		return (1 / (1 + exp(-Value))) * (1 - (1 / (1 + exp(-Value))));
-		break;
-	case ActivationFunctions::Tanh:
-		return 1 - (tanh(Value) * tanh(Value));
-		break;
-	case ActivationFunctions::ReLU:
-		return Value >= 0 ? 1 : 0;
-		break;
-	case ActivationFunctions::LeakyReLU :
-		return Value >= 0 ? 1 : 0.01;
-		break;
-	case ActivationFunctions::ParametricReLU :
-		return Value >= 0 ? 1 : PARAMETER_FOR_ParametricReLU;
-		break;
-	case ActivationFunctions::ELU :
-		return Value >= 0 ? 1 : ActivationFunction(Value) - PARAMETER_FOR_ELU;
-		break;
-	case ActivationFunctions::Swish :
-		return (ActivationFunction(Value) + (1 / (1 + exp(-Value))) * (1 - ActivationFunction(Value)));
-		break;
-	case ActivationFunctions::GELU :
-		0.5 * erf(Value / sqrt(2)) + 0.398942 * Value * exp(pow(-Value, 2)) + 0.5;
-		break;
-		break;
-	case ActivationFunctions::SELU :
-		return Value >= 0 ? 1 : ActivationFunction(Value) - gradient;
-		break;
-	}
-	
+	return ActivationFunctions[static_cast<int>(activationFunctionName)]->EvaluateActivationFunctionDerivative(Value, gradient);
 }
 
 //Calculates the sum of the derivatives of the weights of the next layer for a neuron.
@@ -180,7 +171,7 @@ std::vector<double> Neuron::GetWeights() const
 {
 	std::vector<double> neuronWeights;
 	neuronWeights.reserve(outputWeights.size());
-	for (const auto &connection: outputWeights)
+	for (const auto& connection : outputWeights)
 	{
 		neuronWeights.push_back(connection.weight);
 	}
@@ -188,16 +179,31 @@ std::vector<double> Neuron::GetWeights() const
 }
 
 
-NeuralNet::NeuralNet(){}
+NeuralNet::NeuralNet() {}
 /*Constructor for the NeuralNet class, which takes as argument a vector of integers specifying the number of neurons in each layer, and the learning rate (eta) and momentum (alpha) values.
  It creates the layers of neurons, initializing the weights of the output connections randomly, and sets the output value of the bias neuron in each layer to 1.0.*/
-NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
+NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha, ActivationFunctionsNum activationFunction)
 {
 	this->alpha = alpha;
 	this->eta = eta;
 	this->activationFunction = activationFunction;
 	this->topology = topology;
 
+	if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSigmoid>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionTanh>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionReLU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionLeakyReLU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionParametricReLU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionELU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSwish>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
+		if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+			std::cout << "Insertion of act. func. error" << std::endl;
+			exit(1);
+		}
+	}
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
 	{
 		int numOfOutputs;
@@ -206,12 +212,12 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha,
 
 		Layer tmpLayer;
 		for (int neuronNum = 0; neuronNum < topology[NumOfLayer]; ++neuronNum)
-			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha, activationFunction));
+			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha, activationFunction, ActivationFunctions));
 
 		layers.emplace_back(tmpLayer);
 	}
 }
-void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctions activationFunction)
+void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, double alpha, ActivationFunctionsNum activationFunction)
 {
 	this->alpha = alpha;
 	this->eta = eta;
@@ -223,6 +229,22 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 	RMS_error.recentAverageError = 0;
 	RMS_error.recentAverageSmoothingFactor = 100;
 
+	if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSigmoid>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionTanh>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionReLU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionLeakyReLU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionParametricReLU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionELU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSwish>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
+		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
+		if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+			std::cout << "Insertion of act. func. error" << std::endl;
+			exit(1);
+		}
+	}
+
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
 	{
 		int numOfOutputs;
@@ -231,7 +253,7 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 
 		Layer tmpLayer;
 		for (int neuronNum = 0; neuronNum < topology[NumOfLayer]; ++neuronNum)
-			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha, activationFunction));
+			tmpLayer.emplace_back(Neuron(numOfOutputs, neuronNum, eta, alpha, activationFunction, ActivationFunctions));
 
 		layers.emplace_back(tmpLayer);
 	}
@@ -262,14 +284,14 @@ void NeuralNet::CalculateOutputLayerGradients(const std::vector<double>& targetV
 
 	for (unsigned int NumOfNeuron = 0; NumOfNeuron < outputLayer.size(); ++NumOfNeuron)
 		outputLayer[NumOfNeuron].CalculateOutputGradients(targetValues[NumOfNeuron]);
-	
+
 }
 
 /*Calculates the gradients of the hidden neurons in the network, based on the derivatives of the weights of the next layer and the gradients of the neurons in the next layer, multiplied by the derivative of the activation function.
 It calls the CalculateHiddenGradient() function for each hidden neuron in each hidden layer of the network.*/
 void NeuralNet::CalculateHiddenLayersGradients()
 {
-	const unsigned int NumOfLayersWithoutOutputLayer = layers.size() - 2;
+	const unsigned int NumOfLayersWithoutOutputLayer = int(layers.size() - 2);
 
 	for (unsigned int NumOfLayer = NumOfLayersWithoutOutputLayer; NumOfLayer > 0; --NumOfLayer)
 	{
@@ -285,7 +307,7 @@ void NeuralNet::CalculateHiddenLayersGradients()
  *It uses the back propagation algorithm to adjust the weights in the direction that minimizes the error.*/
 void NeuralNet::UpdateConnectionWeights()
 {
-	for (unsigned int LayerNum = layers.size() - 1; LayerNum > 0; --LayerNum)
+	for (unsigned int LayerNum = int(layers.size() - 1); LayerNum > 0; --LayerNum)
 	{
 		Layer& currentLayer = layers[LayerNum];
 		Layer& previousLayer = layers[LayerNum - 1];
@@ -353,7 +375,7 @@ std::vector<int> NeuralNet::GetTopology() const
 	return topology;
 }
 
-double NeuralNet::AverageGetError() const {return RMS_error.recentAverageError;}
+double NeuralNet::AverageGetError() const { return RMS_error.recentAverageError; }
 
 //Return final values stored in output neurons
 std::vector<double> NeuralNet::GetResults() const
@@ -373,7 +395,7 @@ std::vector<Layer> NeuralNet::GetLayers() const
 
 /*This function takes in several parameters related to a neural network and prints them to the console.
  It first prints the expected label and the network output index, followed by the exact probability values obtained from the network.
- It then prints the average error and a blank line. Finally, if the boolean parameter printNumber is true, it prints the input values as a 28x28 grid of characters
+ It then prints the average error and a blank line. Finally, if the boolean parameter printNumber is true, it prints the input values as a IMAGE_DIMENSIONxIMAGE_DIMENSION grid of characters
  ('S' for non-zero values and ' ' for zero values)*/
 void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber)
 {
@@ -392,11 +414,11 @@ void printValues(const int label, const ptrdiff_t index, const std::vector<doubl
 		return;
 	}
 
-	for (int i = 0; i < 28; ++i)
+	for (int i = 0; i < IMAGE_DIMENSION; ++i)
 	{
-		for (int j = 0; j < 28; ++j)
+		for (int j = 0; j < IMAGE_DIMENSION; ++j)
 		{
-			if (inputValues[28 * i + j] == 0.0) std::cout << " ";
+			if (inputValues[IMAGE_DIMENSION * i + j] == 0.0) std::cout << " ";
 			else std::cout << "S";
 		}
 		std::cout << std::endl;
@@ -408,11 +430,11 @@ void printValues(const int label, const ptrdiff_t index, const std::vector<doubl
 /*This function takes in a reference to a NeuralNet object (a neural network) and a vector of input training samples, and updates the network's weights using back propagation.
  For each sample in the vector, it extracts the label and target values, feeds the input forward through the network, and performs back propagation to update the weights based on the
  error between the output and target values.*/
-void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& trainSamples)
+void TrainNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples)
 {
-	for (auto trainSample : trainSamples)
+	for (auto& trainSample : trainSamples)
 	{
-		const int label = trainSample[0];
+		const int label = int(trainSample[0]);
 
 		std::vector<double> targetValues(10, 0.0);
 		targetValues[label] = 1.0;
@@ -433,13 +455,13 @@ void TrainNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>
 /*This function takes in a reference to a NeuralNet object (a neural network), a vector of input test samples, and a boolean flag indicating whether to print the test results.
  It iterates through the test samples, extracts the label and target values, feeds the input forward through the network, and compares the network's output to the true label
  to count the number of correct predictions. If the print flag is true, it also calls the */
-double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>>& testSamples, bool print)
+double testNetwork(::NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print)
 {
 	std::vector<std::vector<int>> corrects(10, std::vector<int>(2, 0));
 	double correct_predictions = 0.0;
-	for (auto testSample : testSamples)
+	for (auto& testSample : testSamples)
 	{
-		const int label = testSample[0];
+		const int label = int(testSample[0]);
 
 		std::vector<double> targetValues(10, 0.0);
 		targetValues[label] = 1.0;
@@ -456,7 +478,7 @@ double testNetwork(::NeuralNet& MyNetwork, const std::vector<std::vector<double>
 			corrects[label][1]++;
 		}
 
-		if(print) printValues(label, max_element_index, resultValues, testSample, MyNetwork.AverageGetError(), true);
+		if (print) printValues(label, max_element_index, resultValues, testSample, MyNetwork.AverageGetError(), true);
 	}
 	std::cout << correct_predictions / testSamples.size() << std::endl;
 	return correct_predictions / testSamples.size();
@@ -543,7 +565,7 @@ void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path = "weights
 	std::vector<std::vector<std::vector<double>>> weights;
 	std::vector<int> Net_topology = MyNetwork.GetTopology();
 	Net_topology.pop_back();
-	for(auto topology: Net_topology)
+	for (auto topology : Net_topology)
 	{
 		std::vector<std::vector<double>> layer;
 		for (size_t i = 0; i < topology; ++i)
