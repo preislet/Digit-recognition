@@ -20,13 +20,13 @@ class ImageConverison
 private:
 	RGB whitePixel = { 255,255,255 };
 public:
-	std::vector<std::vector<RGB>> ConvertToVector(const std::string& path);
-	std::vector<std::vector<int>> ConvertToBinVector(const std::vector<std::vector<RGB>>& imageRGBVector);
+	std::vector<std::vector<RGB>> ConvertToVector(const std::string& path) const;
+	std::vector<std::vector<int>> ConvertToBinVector(const std::vector<std::vector<RGB>>& imageRGBVector) const;
 
-	std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::string& path);
-	std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std::vector<RGB>>& imageRGBVector);
-	std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std::vector<int>>& INT_vector);
+	std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::string& path) const;
+	std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std::vector<RGB>>& imageRGBVector) const;
+	std::vector<int> ConvertToCompressedBinaryNet_readyVector(const std::vector<std::vector<int>>& INT_vector) const;
 
-	void PrintNumber(const std::vector<double>& Img_vector);
+	void PrintNumber(const std::vector<double>& Img_vector) const;
 };
 #endif //IMAGE_COVERSION

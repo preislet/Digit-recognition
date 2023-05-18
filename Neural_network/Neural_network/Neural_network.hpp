@@ -176,17 +176,17 @@ public:
 class FileHandler
 {
 public:
-    std::vector<std::vector<double>> read_csv(const std::string& path);
-    void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path);
-    void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path);
+    std::vector<std::vector<double>> read_csv(const std::string& path) const;
+    void writeWeightsToFile(const NeuralNet& MyNetwork, const std::string& path) const;
+    void insertWeightsToNet(NeuralNet& MyNetwork, const std::string& path) const;
 };
 
 class NetworksTraining
 {
 public:
-    void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber);
-    void TrainNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples);
-    double testNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print = false);
+    void printValues(const int label, const ptrdiff_t index, const std::vector<double>& resultValues, const std::vector<double>& inputValues, const double averageError, const bool printNumber) const;
+    void TrainNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& trainSamples) const;
+    double testNetwork(NeuralNet& MyNetwork, std::vector<std::vector<double>>& testSamples, bool print = false) const;
 };
 
 
