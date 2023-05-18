@@ -19,6 +19,7 @@ class ImageConverison
 {
 private:
 	RGB whitePixel = { 255,255,255 };
+	bool IsPixelWhite(const  std::vector<std::vector<RGB>>& imageRGBVector, size_t i, size_t j) const;
 public:
 	std::vector<std::vector<RGB>> ConvertToVector(const std::string& path) const;
 	std::vector<std::vector<int>> ConvertToBinVector(const std::vector<std::vector<RGB>>& imageRGBVector) const;

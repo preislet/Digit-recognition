@@ -42,7 +42,7 @@ NeuralNetGUI::MainForm::MainForm(void)
 // This is the destructor for the MainForm class, which is responsible for freeing up any allocated memory when the form is closed.
 NeuralNetGUI::MainForm::~MainForm() { if (components) delete components; }
 
-int NeuralNetGUI::MainForm::returnTopBorder(int rows, int columns)
+int NeuralNetGUI::MainForm::returnTopBorder(int rows, int columns) 
 {
 	int corner = 0;
 	for (int i = 0; i < rows; i++)
@@ -58,7 +58,7 @@ int NeuralNetGUI::MainForm::returnTopBorder(int rows, int columns)
 	}
 	return corner;
 }
-int NeuralNetGUI::MainForm::returnBottomBorder(int rows, int columns)
+int NeuralNetGUI::MainForm::returnBottomBorder(int rows, int columns) 
 {
 	int corner = 0;
 	for (int i = rows - 1; i >= 0; --i)
@@ -106,6 +106,7 @@ int NeuralNetGUI::MainForm::returnRightBorder(int rows, int columns)
 	}
 	return corner;
 }
+
 void NeuralNetGUI::MainForm::SumScoresPrediction(const std::vector<std::vector<double>>& AllResults)
 {
 	std::vector<double> resultValues(10, 0.0);

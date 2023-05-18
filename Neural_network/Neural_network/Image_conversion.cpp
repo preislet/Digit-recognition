@@ -17,6 +17,11 @@
 
 #include <iostream>
 
+
+bool ImageConverison::IsPixelWhite(const  std::vector<std::vector<RGB>>& imageRGBVector, size_t i, size_t j) const
+{
+	return imageRGBVector[i][j].r == whitePixel.r && imageRGBVector[i][j].g == whitePixel.g && imageRGBVector[i][j].b == whitePixel.b;
+}
 /*This function takes a path to an image file and returns a vector of vectors of RGB values that represent the pixels in the image.
  It uses the GDI+ library to read the image file and extract the RGB values of each pixel.
  It then stores these values in a two-dimensional vector, where each row represents a horizontal line of pixels in the image, and each column represents
@@ -66,7 +71,7 @@ std::vector<std::vector<int>> ImageConverison::ConvertToBinVector(const std::vec
         std::vector<int> INT_vector_line;
         for (int j = 0; j < imageRGBVector[0].size(); ++j)
         {
-            if (imageRGBVector[i][j].r == whitePixel.r && imageRGBVector[i][j].g == whitePixel.g && imageRGBVector[i][j].b == whitePixel.b) INT_vector_line.push_back(0);
+            if (IsPixelWhite(imageRGBVector, i, j)) INT_vector_line.push_back(0);
             else INT_vector_line.push_back(1);
         }
     	INT_vector.emplace_back(INT_vector_line);
@@ -139,11 +144,11 @@ std::vector<int> ImageConverison::ConvertToCompressedBinaryNet_readyVector(const
  and a space character is used to represent a white pixel.*/
 void ImageConverison::PrintNumber(const std::vector<double>& Img_vector) const
 {
-    for (size_t i = 0; i < 28; ++i)
+    for (size_t i = 0; i < neuralNetworkImageHeight; ++i)
     {
-        for (size_t j = 0; j < 28; ++j)
+        for (size_t j = 0; j < neuralNetworkImageWidth; ++j)
         {
-            if (Img_vector[28 * i + j] == 0.0) std::cout << " ";
+            if (Img_vector[neuralNetworkImageWidth * i + j] == 0.0) std::cout << " ";
             else std::cout << "S";
         }
         std::cout << std::endl;

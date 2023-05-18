@@ -158,6 +158,7 @@ private:
     void CalculateOutputLayerGradients(const std::vector<double>& targetValues);
     void CalculateHiddenLayersGradients();
     void UpdateConnectionWeights();
+    bool ActivationFunctionsLoadedCorrectly() const;
 
 public:
     NeuralNet();

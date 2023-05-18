@@ -189,7 +189,7 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha,
 	this->activationFunction = activationFunction;
 	this->topology = topology;
 
-	if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+	if (!ActivationFunctionsLoadedCorrectly) {
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSigmoid>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionTanh>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionReLU>());
@@ -199,7 +199,7 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha,
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSwish>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
-		if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+		if (!ActivationFunctionsLoadedCorrectly) {
 			throw std::runtime_error("Activation functions not loaded correctly");
 		}
 	}
@@ -228,7 +228,7 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 	RMS_error.recentAverageError = 0;
 	RMS_error.recentAverageSmoothingFactor = 100;
 
-	if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+	if (!ActivationFunctionsLoadedCorrectly) {
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSigmoid>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionTanh>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionReLU>());
@@ -238,7 +238,7 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSwish>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
-		if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
+		if (!ActivationFunctionsLoadedCorrectly) {
 			throw std::runtime_error("Activation functions not loaded correctly");
 		}
 	}
@@ -257,6 +257,10 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 	}
 }
 
+bool NeuralNet::ActivationFunctionsLoadedCorrectly() const
+{
+		return ActivationFunctions.size() == static_cast<int>(ActivationFunctionsNum::COUNT_);
+}
 //Calculates the root mean square (RMS) error between the output values of the network and the target output values.
 void NeuralNet::CalculateRMS_error(const std::vector<double>& targetValues)
 {

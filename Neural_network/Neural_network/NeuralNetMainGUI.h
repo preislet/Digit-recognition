@@ -852,6 +852,7 @@ namespace NeuralNetGUI {
 	private:
 		std::vector<std::vector<double>>TryAllPosition(NeuralNet& Network);
 		void fillOutputTable(const std::vector<double>& resultValues);
+
 		int returnTopBorder(int rows, int columns);
 		int returnBottomBorder(int rows, int columns);
 		int returnLeftBorder(int rows, int columns);
@@ -861,6 +862,7 @@ namespace NeuralNetGUI {
 		void HighestScorePrediction(const std::vector<std::vector<double>>& AllResults);
         void BasicPrediction(NeuralNet& Network);
 		void PredictNumber(NeuralNet& Network);
+
 		std::vector<double> LoadFromDrawing();
 		System::Void custom_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
 		System::Void standard_nn_CheckedChanged(System::Object^ sender, System::EventArgs^ e);
