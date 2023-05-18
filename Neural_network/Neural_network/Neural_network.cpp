@@ -200,8 +200,7 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha,
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
 		if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
-			std::cout << "Insertion of act. func. error" << std::endl;
-			exit(1);
+			throw std::runtime_error("Activation functions not loaded correctly");
 		}
 	}
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
@@ -240,8 +239,7 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
 		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
 		if (ActivationFunctions.size() != static_cast<int>(ActivationFunctionsNum::COUNT_)) {
-			std::cout << "Insertion of act. func. error" << std::endl;
-			exit(1);
+			throw std::runtime_error("Activation functions not loaded correctly");
 		}
 	}
 
