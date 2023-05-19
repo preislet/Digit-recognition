@@ -124,14 +124,14 @@ private:
     double inputValue;
     double outputValue;
     double gradient;
+    std::shared_ptr<std::vector<std::unique_ptr<ActivationFunctionBase>>> ActivationFunctions;
     std::vector<Connection> outputWeights;
-    std::vector<std::shared_ptr<ActivationFunctionBase>> ActivationFunctions;
 
     double ActivationFunction(double sumOfPreviousLayer);
     double ActivationFunctionDerivative(double Value);
     double SumDerivationsOfWeightsOfNextLayer(const Layer& nextLayer) const;
 public:
-    Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctionsNum activationFunction, const std::vector<std::shared_ptr<ActivationFunctionBase>>& ActivationFunctions);
+    Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctionsNum activationFunction,const std::shared_ptr<std::vector<std::unique_ptr<ActivationFunctionBase>>> &ActivationFunctions);
     void SetOutputValue(const double outVal);
     double GetOutputValue() const;
     void FeedForward(const Layer& previousLayer);
@@ -151,7 +151,7 @@ private:
     std::vector<int> topology;
     std::vector<Layer> layers;
     RMSError RMS_error;
-    std::vector<std::shared_ptr<ActivationFunctionBase>> ActivationFunctions;
+    std::shared_ptr<std::vector<std::unique_ptr<ActivationFunctionBase>>> ActivationFunctions = std::make_shared<std::vector<std::unique_ptr<ActivationFunctionBase>>>();
 
     void CalculateRMS_error(const std::vector<double>& targetValues);
     void CalculateRecentAverageError();

@@ -84,7 +84,7 @@ double::ActivationFunctionGELU::EvaluateActivationFunctionDerivative(double& val
 /*Constructor for the Neuron class, which takes as arguments the number of connections to the next layer, the index of the neuron in the current layer,
  and the learning rate (eta) and momentum (alpha) values. It initializes the neuron's output value and gradient to 0, and creates a vector of output weights
  with random initial weights.*/
-::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctionsNum activationFunctionName, const std::vector<std::shared_ptr<ActivationFunctionBase>>& ActivationFunctions)
+::Neuron::Neuron(int numberOfConnections, int index, double eta, double alpha, ActivationFunctionsNum activationFunctionName, const std::shared_ptr<std::vector<std::unique_ptr<ActivationFunctionBase>>>& ActivationFunctions)
 {
 	this->numberOfConnections = numberOfConnections;
 	this->index = index;
@@ -149,11 +149,11 @@ void Neuron::InsertWeights(const std::vector<double>& weight)
 }
 
 double Neuron::ActivationFunction(double sumOfPreviousLayer){
-	return ActivationFunctions[static_cast<int>(activationFunctionName)]->EvaluateActivationFunction(sumOfPreviousLayer, gradient);
+	return ActivationFunctions->at(static_cast<int>(activationFunctionName))->EvaluateActivationFunction(sumOfPreviousLayer, gradient);
 }
 
 double Neuron::ActivationFunctionDerivative(double Value) {
-	return ActivationFunctions[static_cast<int>(activationFunctionName)]->EvaluateActivationFunctionDerivative(Value, gradient);
+	return ActivationFunctions->at(static_cast<int>(activationFunctionName))->EvaluateActivationFunctionDerivative(Value, gradient);
 }
 
 //Calculates the sum of the derivatives of the weights of the next layer for a neuron.
@@ -189,20 +189,21 @@ NeuralNet::NeuralNet(const std::vector<int>& topology, double eta, double alpha,
 	this->activationFunction = activationFunction;
 	this->topology = topology;
 
-	if (!ActivationFunctionsLoadedCorrectly) {
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSigmoid>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionTanh>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionReLU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionLeakyReLU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionParametricReLU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionELU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSwish>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
-		if (!ActivationFunctionsLoadedCorrectly) {
+	if (!ActivationFunctionsLoadedCorrectly()) {
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionSigmoid>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionTanh>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionReLU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionLeakyReLU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionParametricReLU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionELU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionSwish>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionGELU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionSELU>());
+		if (!ActivationFunctionsLoadedCorrectly()) {
 			throw std::runtime_error("Activation functions not loaded correctly");
 		}
 	}
+
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
 	{
 		int numOfOutputs;
@@ -228,20 +229,23 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 	RMS_error.recentAverageError = 0;
 	RMS_error.recentAverageSmoothingFactor = 100;
 
-	if (!ActivationFunctionsLoadedCorrectly) {
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSigmoid>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionTanh>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionReLU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionLeakyReLU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionParametricReLU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionELU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSwish>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionGELU>());
-		ActivationFunctions.push_back(std::make_shared<ActivationFunctionSELU>());
-		if (!ActivationFunctionsLoadedCorrectly) {
+	
+	if (!ActivationFunctionsLoadedCorrectly()) {
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionSigmoid>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionTanh>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionReLU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionLeakyReLU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionParametricReLU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionELU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionSwish>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionGELU>());
+		ActivationFunctions->push_back(std::make_unique<ActivationFunctionSELU>());
+		if (!ActivationFunctionsLoadedCorrectly()) {
 			throw std::runtime_error("Activation functions not loaded correctly");
 		}
 	}
+	
+	
 
 	for (unsigned int NumOfLayer = 0; NumOfLayer < topology.size(); ++NumOfLayer)
 	{
@@ -255,11 +259,12 @@ void NeuralNet::NeuralNetUpdate(const std::vector<int>& topology, double eta, do
 
 		layers.emplace_back(tmpLayer);
 	}
+	
 }
 
 bool NeuralNet::ActivationFunctionsLoadedCorrectly() const
 {
-		return ActivationFunctions.size() == static_cast<int>(ActivationFunctionsNum::COUNT_);
+		return ActivationFunctions->size() == static_cast<int>(ActivationFunctionsNum::COUNT_);
 }
 //Calculates the root mean square (RMS) error between the output values of the network and the target output values.
 void NeuralNet::CalculateRMS_error(const std::vector<double>& targetValues)
